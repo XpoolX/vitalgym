@@ -83,8 +83,8 @@ const ExerciseBlock = ({ exercise, numero }) => {
             <div className="exercise-name">
               {(exercise.nombre || "").toUpperCase()}
             </div>
-            {exercise.categoria && (
-              <div className="exercise-category">{exercise.categoria}</div>
+            {exercise.grupoMuscular && (
+              <div className="exercise-category">{exercise.grupoMuscular}</div>
             )}
           </div>
         </div>
