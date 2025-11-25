@@ -10,6 +10,7 @@ import {
   TextInput,
   Vibration,
   Alert,
+  Modal,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { apiAuth } from "../lib/api";
@@ -63,6 +64,12 @@ export default function TrainingScreen() {
   
   // Completed exercises data for saving
   const [completedExercises, setCompletedExercises] = useState<any[]>([]);
+  
+  // User notes for current exercise
+  const [exerciseNotes, setExerciseNotes] = useState<string>("");
+  
+  // Instructions modal
+  const [showInstructions, setShowInstructions] = useState(false);
   
   // Helper to parse series
   function parseSeries(seriesStr: string | number[] | undefined): number[] {
@@ -135,6 +142,7 @@ export default function TrainingScreen() {
     setCurrentSerieIndex(0);
     setIsResting(false);
     setRestTimeLeft(0);
+    setExerciseNotes("");
   }, []);
 
   // Timer effect
@@ -192,16 +200,18 @@ export default function TrainingScreen() {
   };
 
   // Move to next exercise
-  const goToNextExercise = () => {
+  const goToNextExercise = (skipCurrent: boolean = false) => {
     const currentExercise = exercises[currentExerciseIndex];
     
-    // Save completed exercise data
+    // Save completed exercise data (even if skipped)
     setCompletedExercises((prev) => [
       ...prev,
       {
         routineExerciseId: currentExercise.id,
         nombre: currentExercise.exercise?.nombre || `Ejercicio #${currentExercise.exerciseId}`,
         seriesData: seriesData,
+        notas: exerciseNotes,
+        skipped: skipCurrent,
       },
     ]);
     
@@ -228,6 +238,8 @@ export default function TrainingScreen() {
           routineExerciseId: currentExercise.id,
           nombre: currentExercise.exercise?.nombre || `Ejercicio #${currentExercise.exerciseId}`,
           seriesData: seriesData,
+          notas: exerciseNotes,
+          skipped: false,
         },
       ];
       
@@ -300,10 +312,53 @@ export default function TrainingScreen() {
   const exerciseName = currentExercise?.exercise?.nombre || `Ejercicio #${currentExercise?.exerciseId}`;
   const exerciseImage = getImageUrl(currentExercise?.exercise?.imagenUrl);
   const restSeconds = currentExercise?.descansoSegundos || 90;
+  const exerciseDescription = currentExercise?.exercise?.descripcion || "";
 
   return (
     <View style={{ flex: 1, backgroundColor: "#0E0E0E" }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+      {/* Fixed Rest Timer at top - only shows when resting */}
+      {isResting && (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 100,
+            backgroundColor: "#1a1a2e",
+            padding: 16,
+            alignItems: "center",
+            borderBottomWidth: 2,
+            borderBottomColor: "#C6FF00",
+            paddingTop: 50,
+          }}
+        >
+          <Text style={{ color: "#C6FF00", fontSize: 12, fontWeight: "600" }}>
+            DESCANSO
+          </Text>
+          <Text style={{ color: "#C6FF00", fontSize: 40, fontWeight: "800" }}>
+            {formatTime(restTimeLeft)}
+          </Text>
+          <Pressable
+            onPress={() => {
+              if (timerRef.current) clearInterval(timerRef.current);
+              setIsResting(false);
+              setRestTimeLeft(0);
+            }}
+            style={{
+              marginTop: 8,
+              paddingHorizontal: 16,
+              paddingVertical: 6,
+              backgroundColor: "#333",
+              borderRadius: 20,
+            }}
+          >
+            <Text style={{ color: "white", fontSize: 13 }}>Saltar descanso</Text>
+          </Pressable>
+        </View>
+      )}
+
+      <ScrollView contentContainerStyle={{ paddingBottom: 140, paddingTop: isResting ? 140 : 0 }}>
         {/* Header with image */}
         <View style={{ height: 200, backgroundColor: "#141414" }}>
           {exerciseImage ? (
@@ -375,59 +430,36 @@ export default function TrainingScreen() {
           </View>
         </View>
 
-        {/* Rest timer */}
-        {isResting && (
-          <View
-            style={{
-              backgroundColor: "#1a1a2e",
-              padding: 20,
-              alignItems: "center",
-              borderBottomWidth: 2,
-              borderBottomColor: "#C6FF00",
-            }}
-          >
-            <Text style={{ color: "#C6FF00", fontSize: 14, fontWeight: "600" }}>
-              DESCANSO
-            </Text>
-            <Text style={{ color: "#C6FF00", fontSize: 48, fontWeight: "800" }}>
-              {formatTime(restTimeLeft)}
-            </Text>
-            <Pressable
-              onPress={() => {
-                if (timerRef.current) clearInterval(timerRef.current);
-                setIsResting(false);
-                setRestTimeLeft(0);
-              }}
-              style={{
-                marginTop: 10,
-                paddingHorizontal: 20,
-                paddingVertical: 8,
-                backgroundColor: "#333",
-                borderRadius: 20,
-              }}
-            >
-              <Text style={{ color: "white" }}>Saltar descanso</Text>
-            </Pressable>
-          </View>
-        )}
-
         {/* Content */}
         <View style={{ padding: 16, gap: 16 }}>
-          {/* Rest time info */}
+          {/* Action icons bar */}
           <View
             style={{
               flexDirection: "row",
-              justifyContent: "space-between",
+              justifyContent: "space-around",
               alignItems: "center",
+              paddingVertical: 12,
               backgroundColor: "#151515",
-              padding: 12,
               borderRadius: 12,
             }}
           >
-            <Text style={{ color: "#BDBDBD" }}>Tiempo de descanso:</Text>
-            <Text style={{ color: "#C6FF00", fontWeight: "700" }}>
-              {formatTime(restSeconds)}
-            </Text>
+            <View style={{ alignItems: "center", gap: 4 }}>
+              <Text style={{ color: "white", fontSize: 18 }}>⏱</Text>
+              <Text style={{ color: "white", fontSize: 12 }}>
+                {formatTime(restSeconds)}
+              </Text>
+            </View>
+            <Pressable 
+              onPress={() => setShowInstructions(true)}
+              style={{ alignItems: "center", gap: 4 }}
+            >
+              <Text style={{ color: "white", fontSize: 18 }}>▶</Text>
+              <Text style={{ color: "white", fontSize: 12 }}>Instrucciones</Text>
+            </Pressable>
+            <View style={{ alignItems: "center", gap: 4 }}>
+              <Text style={{ color: "white", fontSize: 18 }}>📊</Text>
+              <Text style={{ color: "white", fontSize: 12 }}>Analíticas</Text>
+            </View>
           </View>
 
           {/* Series */}
@@ -443,7 +475,6 @@ export default function TrainingScreen() {
                   flexDirection: "row",
                   alignItems: "center",
                   gap: 10,
-                  opacity: serie.completed ? 0.6 : 1,
                 }}
               >
                 {/* Serie number / completion button */}
@@ -459,6 +490,7 @@ export default function TrainingScreen() {
                     borderColor: index === currentSerieIndex && !isResting ? "#C6FF00" : "#232323",
                     alignItems: "center",
                     justifyContent: "center",
+                    opacity: serie.completed ? 0.8 : (index > 0 && !seriesData[index - 1].completed) ? 0.5 : 1,
                   }}
                 >
                   {serie.completed ? (
@@ -485,13 +517,13 @@ export default function TrainingScreen() {
                   </Text>
                 </View>
 
-                {/* Kg input */}
+                {/* Kg input - always editable */}
                 <View
                   style={{
                     flex: 1,
                     backgroundColor: "#151515",
                     borderWidth: 1,
-                    borderColor: "#232323",
+                    borderColor: serie.completed ? "#C6FF00" : "#232323",
                     borderRadius: 12,
                     padding: 12,
                   }}
@@ -509,16 +541,15 @@ export default function TrainingScreen() {
                     keyboardType="numeric"
                     value={serie.kg}
                     onChangeText={(text) => updateKg(index, text)}
-                    editable={!serie.completed}
                   />
                 </View>
               </View>
             ))}
           </View>
 
-          {/* Notes */}
+          {/* Trainer Notes */}
           {currentExercise?.notas && (
-            <View style={{ gap: 6, marginTop: 10 }}>
+            <View style={{ gap: 6 }}>
               <Text style={{ color: "white", fontWeight: "700" }}>Notas del entrenador</Text>
               <View
                 style={{
@@ -533,10 +564,63 @@ export default function TrainingScreen() {
               </View>
             </View>
           )}
+
+          {/* User Notes */}
+          <View style={{ gap: 6 }}>
+            <Text style={{ color: "white", fontWeight: "700" }}>Mis notas</Text>
+            <View
+              style={{
+                backgroundColor: "#151515",
+                borderWidth: 1,
+                borderColor: "#232323",
+                borderRadius: 12,
+                minHeight: 80,
+                padding: 12,
+              }}
+            >
+              <TextInput
+                style={{
+                  color: "white",
+                  fontSize: 14,
+                  padding: 0,
+                  textAlignVertical: "top",
+                }}
+                placeholder="Escribe cómo te fue el ejercicio..."
+                placeholderTextColor="#666"
+                multiline
+                value={exerciseNotes}
+                onChangeText={setExerciseNotes}
+              />
+            </View>
+          </View>
         </View>
       </ScrollView>
 
-      {/* Bottom button */}
+      {/* Instructions Modal */}
+      <Modal
+        visible={showInstructions}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowInstructions(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.8)", justifyContent: "flex-end" }}>
+          <View style={{ backgroundColor: "#151515", borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: "70%" }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <Text style={{ color: "white", fontSize: 18, fontWeight: "700" }}>Instrucciones</Text>
+              <Pressable onPress={() => setShowInstructions(false)}>
+                <Text style={{ color: "#C6FF00", fontSize: 16 }}>Cerrar</Text>
+              </Pressable>
+            </View>
+            <ScrollView>
+              <Text style={{ color: "#BDBDBD", fontSize: 15, lineHeight: 22 }}>
+                {exerciseDescription || "No hay instrucciones disponibles para este ejercicio."}
+              </Text>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Bottom buttons */}
       <View
         style={{
           position: "absolute",
@@ -545,36 +629,51 @@ export default function TrainingScreen() {
           bottom: 0,
           padding: 16,
           backgroundColor: "rgba(14,14,14,0.95)",
+          gap: 10,
         }}
       >
-        {allSeriesCompleted ? (
+        {/* Skip button - always visible */}
+        {!allSeriesCompleted && (
           <Pressable
-            onPress={goToNextExercise}
+            onPress={() => {
+              Alert.alert(
+                "Saltar ejercicio",
+                "¿Estás seguro de que quieres saltar este ejercicio?",
+                [
+                  { text: "Cancelar", style: "cancel" },
+                  { text: "Saltar", onPress: () => goToNextExercise(true) },
+                ]
+              );
+            }}
             style={{
-              backgroundColor: "#C6FF00",
-              paddingVertical: 14,
+              backgroundColor: "transparent",
+              borderWidth: 1,
+              borderColor: "#444",
+              paddingVertical: 12,
               borderRadius: 9999,
               alignItems: "center",
             }}
           >
-            <Text style={{ fontWeight: "700", fontSize: 15, color: "#0E0E0E" }}>
-              {isLastExercise ? "FINALIZAR ENTRENAMIENTO" : "SIGUIENTE EJERCICIO →"}
+            <Text style={{ fontWeight: "600", fontSize: 14, color: "#999" }}>
+              SALTAR EJERCICIO →
             </Text>
           </Pressable>
-        ) : (
-          <View
-            style={{
-              backgroundColor: "#333",
-              paddingVertical: 14,
-              borderRadius: 9999,
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ fontWeight: "700", fontSize: 15, color: "#666" }}>
-              Completa todas las series
-            </Text>
-          </View>
         )}
+        
+        {/* Main action button */}
+        <Pressable
+          onPress={() => goToNextExercise(false)}
+          style={{
+            backgroundColor: allSeriesCompleted ? "#C6FF00" : "#333",
+            paddingVertical: 14,
+            borderRadius: 9999,
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ fontWeight: "700", fontSize: 15, color: allSeriesCompleted ? "#0E0E0E" : "#666" }}>
+            {isLastExercise ? "FINALIZAR ENTRENAMIENTO" : "SIGUIENTE EJERCICIO →"}
+          </Text>
+        </Pressable>
       </View>
     </View>
   );
