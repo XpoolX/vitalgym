@@ -132,3 +132,144 @@ exports.getRoutineExerciseById = async (req, res) => {
       .json({ message: 'Error al obtener ejercicio de la rutina', error: error.message });
   }
 };
+
+// Obtener el día de entrenamiento actual del usuario
+exports.getCurrentTrainingDay = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id, {
+      attributes: ['id', 'rutinaAsignadaId', 'currentTrainingDay'],
+      include: {
+        model: Routine,
+        include: [RoutineExercise]
+      }
+    });
+
+    if (!user || !user.Routine) {
+      return res.status(404).json({ message: 'No tienes rutina asignada' });
+    }
+
+    // Obtener todos los días disponibles en la rutina
+    const diasDisponibles = [...new Set(user.Routine.RoutineExercises.map(re => re.dia))].sort((a, b) => a - b);
+    const currentDay = user.currentTrainingDay || 1;
+
+    // Si el día actual es mayor que los días disponibles, volver al día 1
+    const diaActual = diasDisponibles.includes(currentDay) ? currentDay : diasDisponibles[0] || 1;
+
+    res.json({
+      currentTrainingDay: diaActual,
+      totalDays: diasDisponibles.length,
+      availableDays: diasDisponibles,
+      routineId: user.Routine.id,
+      routineName: user.Routine.nombre
+    });
+  } catch (error) {
+    console.error('Error getting current training day:', error);
+    res.status(500).json({ message: 'Error al obtener día de entrenamiento', error: error.message });
+  }
+};
+
+// Obtener ejercicios del día actual para entrenar
+exports.getTrainingDayExercises = async (req, res) => {
+  try {
+    const { dia } = req.params;
+    const dayNum = parseInt(dia, 10);
+
+    const user = await User.findByPk(req.user.id, { attributes: ['rutinaAsignadaId'] });
+    if (!user || !user.rutinaAsignadaId) {
+      return res.status(404).json({ message: 'No tienes rutina asignada' });
+    }
+
+    const ejercicios = await RoutineExercise.findAll({
+      where: { routineId: user.rutinaAsignadaId, dia: dayNum },
+      include: [
+        {
+          model: Exercise,
+          as: 'Exercise',
+          attributes: ['id', 'nombre', 'descripcion', 'imagenUrl', 'videoUrl']
+        }
+      ],
+      order: [['id', 'ASC']]
+    });
+
+    const result = ejercicios.map(re => ({
+      id: re.id,
+      routineId: re.routineId,
+      exerciseId: re.exerciseId,
+      dia: re.dia,
+      series: re.series,
+      descansoSegundos: re.descansoSegundos || 90,
+      notas: re.notas,
+      exercise: re.Exercise ? {
+        id: re.Exercise.id,
+        nombre: re.Exercise.nombre,
+        descripcion: re.Exercise.descripcion,
+        imagenUrl: re.Exercise.imagenUrl,
+        videoUrl: re.Exercise.videoUrl
+      } : null
+    }));
+
+    res.json(result);
+  } catch (error) {
+    console.error('Error getting training day exercises:', error);
+    res.status(500).json({ message: 'Error al obtener ejercicios del día', error: error.message });
+  }
+};
+
+// Guardar sesión de entrenamiento completada
+exports.saveCompletedWorkout = async (req, res) => {
+  try {
+    const { diaRutina, ejercicios } = req.body;
+
+    const user = await User.findByPk(req.user.id, {
+      attributes: ['id', 'rutinaAsignadaId', 'currentTrainingDay'],
+      include: {
+        model: Routine,
+        include: [RoutineExercise]
+      }
+    });
+
+    if (!user || !user.Routine) {
+      return res.status(404).json({ message: 'No tienes rutina asignada' });
+    }
+
+    // Crear sesión
+    const nuevaSesion = await Session.create({
+      userId: req.user.id,
+      fecha: new Date(),
+      routineId: user.rutinaAsignadaId,
+      diaRutina: diaRutina,
+      completado: true
+    });
+
+    // Guardar ejercicios con sus series
+    for (const ej of ejercicios) {
+      await SessionExercise.create({
+        sessionId: nuevaSesion.id,
+        nombre: ej.nombre,
+        repeticiones: ej.repeticiones || null,
+        completado: true,
+        routineExerciseId: ej.routineExerciseId,
+        seriesData: ej.seriesData // Array de { serieNum, reps, kg, completed }
+      });
+    }
+
+    // Calcular el siguiente día de entrenamiento
+    const diasDisponibles = [...new Set(user.Routine.RoutineExercises.map(re => re.dia))].sort((a, b) => a - b);
+    const currentIndex = diasDisponibles.indexOf(diaRutina);
+    const nextDay = currentIndex >= 0 && currentIndex < diasDisponibles.length - 1
+      ? diasDisponibles[currentIndex + 1]
+      : diasDisponibles[0]; // Volver al primer día si terminamos
+
+    // Actualizar el día de entrenamiento del usuario
+    await user.update({ currentTrainingDay: nextDay });
+
+    res.status(201).json({
+      message: 'Entrenamiento guardado correctamente',
+      sessionId: nuevaSesion.id,
+      nextTrainingDay: nextDay
+    });
+  } catch (error) {
+    console.error('Error saving completed workout:', error);
+    res.status(500).json({ message: 'Error al guardar entrenamiento', error: error.message });
+  }
+};

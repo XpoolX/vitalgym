@@ -320,7 +320,7 @@ export default function RoutineMine() {
         }}
       >
         <Pressable
-          onPress={() => {}}
+          onPress={() => router.push("/training")}
           style={{
             backgroundColor: "#C6FF00",
             paddingVertical: 14,

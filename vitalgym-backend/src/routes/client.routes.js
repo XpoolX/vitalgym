@@ -9,6 +9,9 @@ router.get('/my-routine', controller.getMyRoutine);
 router.post('/start-session', controller.startSession);
 router.get('/history', controller.getHistory);
 router.get('/routine-exercises/:id', controller.getRoutineExerciseById);
+router.get('/current-training-day', controller.getCurrentTrainingDay);
+router.get('/training-day/:dia/exercises', controller.getTrainingDayExercises);
+router.post('/complete-workout', controller.saveCompletedWorkout);
 
 module.exports = router;
 
