@@ -81,7 +81,8 @@ exports.getRoutineExerciseById = async (req, res) => {
             'id',
             'nombre',
             'descripcion',
-            'categoria',
+            'zonaCorporal',
+            'grupoMuscular',
             'imagenUrl',
             'videoUrl'
           ],
@@ -109,7 +110,8 @@ exports.getRoutineExerciseById = async (req, res) => {
             id: re.Exercise.id,
             nombre: re.Exercise.nombre,
             descripcion: re.Exercise.descripcion,
-            categoria: re.Exercise.categoria,
+            zonaCorporal: re.Exercise.zonaCorporal,
+            grupoMuscular: re.Exercise.grupoMuscular,
             imagenUrl: re.Exercise.imagenUrl,
             videoUrl: re.Exercise.videoUrl,
           }
