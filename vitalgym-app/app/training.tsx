@@ -12,7 +12,7 @@ import {
   Alert,
   Modal,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { apiAuth } from "../lib/api";
 
 const BASE_URL = "https://vitalgym.fit";
@@ -45,6 +45,9 @@ type SerieData = {
 
 export default function TrainingScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const requestedDay = params.dia ? parseInt(String(params.dia), 10) : null;
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -95,9 +98,14 @@ export default function TrainingScreen() {
       setLoading(true);
       setError(null);
       try {
-        // Get current training day
-        const dayRes = await apiAuth.get("/client/current-training-day");
-        const day = dayRes.data.currentTrainingDay;
+        // Use requested day if provided, otherwise get current training day
+        let day: number;
+        if (requestedDay && requestedDay > 0) {
+          day = requestedDay;
+        } else {
+          const dayRes = await apiAuth.get("/client/current-training-day");
+          day = dayRes.data.currentTrainingDay;
+        }
         setCurrentDay(day);
         
         // Get exercises for this day
@@ -105,7 +113,7 @@ export default function TrainingScreen() {
         const dayExercises = exRes.data;
         
         if (!dayExercises || dayExercises.length === 0) {
-          setError("No hay ejercicios para el día de hoy.");
+          setError("No hay ejercicios para el día seleccionado.");
           return;
         }
         

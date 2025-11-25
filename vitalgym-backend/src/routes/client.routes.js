@@ -12,6 +12,7 @@ router.get('/routine-exercises/:id', controller.getRoutineExerciseById);
 router.get('/current-training-day', controller.getCurrentTrainingDay);
 router.get('/training-day/:dia/exercises', controller.getTrainingDayExercises);
 router.post('/complete-workout', controller.saveCompletedWorkout);
+router.get('/completed-days', controller.getCompletedDays);
 
 module.exports = router;
 

@@ -285,3 +285,41 @@ exports.saveCompletedWorkout = async (req, res) => {
     res.status(500).json({ message: 'Error al guardar entrenamiento', error: error.message });
   }
 };
+
+// Obtener días completados con sus fechas
+exports.getCompletedDays = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id, { attributes: ['rutinaAsignadaId'] });
+    if (!user || !user.rutinaAsignadaId) {
+      return res.status(404).json({ message: 'No tienes rutina asignada' });
+    }
+
+    // Buscar todas las sesiones completadas de esta rutina
+    const sessions = await Session.findAll({
+      where: { 
+        userId: req.user.id, 
+        routineId: user.rutinaAsignadaId,
+        completado: true 
+      },
+      attributes: ['id', 'diaRutina', 'fecha'],
+      order: [['fecha', 'DESC']]
+    });
+
+    // Agrupar por día y obtener la fecha más reciente de cada uno
+    const completedDays = {};
+    for (const session of sessions) {
+      if (session.diaRutina && !completedDays[session.diaRutina]) {
+        completedDays[session.diaRutina] = {
+          dia: session.diaRutina,
+          fecha: session.fecha,
+          sessionId: session.id
+        };
+      }
+    }
+
+    res.json(Object.values(completedDays));
+  } catch (error) {
+    console.error('Error getting completed days:', error);
+    res.status(500).json({ message: 'Error al obtener días completados', error: error.message });
+  }
+};

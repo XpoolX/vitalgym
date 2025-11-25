@@ -45,6 +45,18 @@ type RoutineExerciseDetail = {
   };
 };
 
+type CompletedDay = {
+  dia: number;
+  fecha: string;
+  sessionId: number;
+};
+
+type TrainingDayInfo = {
+  currentTrainingDay: number;
+  totalDays: number;
+  availableDays: number[];
+};
+
 const BASE_URL = "https://vitalgym.fit";
 
 export default function RoutineMine() {
@@ -54,6 +66,10 @@ export default function RoutineMine() {
   const [error, setError] = useState<string | null>(null);
   // ahora el mapa es por routineExerciseId -> detalle
   const [reMap, setReMap] = useState<Record<number, RoutineExerciseDetail>>({});
+  // Completed days info
+  const [completedDays, setCompletedDays] = useState<Record<number, CompletedDay>>({});
+  // Current training day info
+  const [trainingDayInfo, setTrainingDayInfo] = useState<TrainingDayInfo | null>(null);
 
   // obtiene 1 routine-exercise por id (el nuevo endpoint)
   const fetchRoutineExerciseById = useCallback(
@@ -113,6 +129,26 @@ export default function RoutineMine() {
           if (detail) map[reId] = detail;
         });
         setReMap(map);
+
+        // 4) Obtener días completados
+        try {
+          const completedRes = await apiAuth.get("/client/completed-days");
+          const completedMap: Record<number, CompletedDay> = {};
+          for (const cd of completedRes.data) {
+            completedMap[cd.dia] = cd;
+          }
+          setCompletedDays(completedMap);
+        } catch (e) {
+          console.log("No se pudieron cargar días completados:", e);
+        }
+
+        // 5) Obtener info del día actual de entrenamiento
+        try {
+          const dayInfoRes = await apiAuth.get("/client/current-training-day");
+          setTrainingDayInfo(dayInfoRes.data);
+        } catch (e) {
+          console.log("No se pudo cargar el día de entrenamiento:", e);
+        }
       } catch (e: any) {
         setError(
           e?.response?.data?.message ||
@@ -143,6 +179,24 @@ export default function RoutineMine() {
     if (!path) return;
     if (path.startsWith("http")) return path;
     return `${BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  }
+
+  // Formatea fecha para mostrar
+  function formatDate(dateStr: string): string {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("es-ES", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  }
+
+  // Navegar al entrenamiento de un día específico
+  function startTrainingDay(dia: number) {
+    router.push({
+      pathname: "/training",
+      params: { dia: String(dia) },
+    });
   }
 
   if (loading) {
@@ -183,6 +237,7 @@ export default function RoutineMine() {
   }
 
   const days = groupByDay(routine.RoutineExercises || []);
+  const currentDay = trainingDayInfo?.currentTrainingDay || 1;
 
   return (
     <View style={{ flex: 1, backgroundColor: "#0E0E0E" }}>
@@ -203,27 +258,86 @@ export default function RoutineMine() {
           <Text style={{ color: "#BDBDBD" }}>{routine.descripcion}</Text>
         ) : null}
 
-        {days.map(({ dia, items }) => (
-          <View key={dia} style={{ gap: 10 }}>
-            <Text
-              style={{
-                color: "white",
-                fontSize: 16,
-                fontWeight: "700",
-                marginTop: 10,
-              }}
-            >
-              Día {dia}
-            </Text>
+        {days.map(({ dia, items }) => {
+          const isCompleted = !!completedDays[dia];
+          const completedInfo = completedDays[dia];
+          const isCurrentDay = dia === currentDay;
 
-            {items.map((rx) => {
-              const detail = reMap[rx.id]; // 👈 ahora por routineExerciseId
-              const name =
-                detail?.exercise?.nombre ||
-                detail?.exercise?.name ||
-                `Ejercicio #${rx.exerciseId}`;
-              const parsedSeries = parseSeries(rx.series);
-              const totalSeries = parsedSeries.length;
+          return (
+            <View key={dia} style={{ gap: 10 }}>
+              {/* Day header with completion status and train button */}
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginTop: 10,
+                }}
+              >
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                    <Text
+                      style={{
+                        color: "white",
+                        fontSize: 16,
+                        fontWeight: "700",
+                      }}
+                    >
+                      Día {dia}
+                    </Text>
+                    {isCurrentDay && (
+                      <View
+                        style={{
+                          backgroundColor: "#C6FF00",
+                          paddingHorizontal: 8,
+                          paddingVertical: 2,
+                          borderRadius: 10,
+                        }}
+                      >
+                        <Text style={{ color: "#0E0E0E", fontSize: 10, fontWeight: "700" }}>
+                          PRÓXIMO
+                        </Text>
+                      </View>
+                    )}
+                    {isCompleted && (
+                      <Text style={{ color: "#4CAF50", fontSize: 14 }}>✓</Text>
+                    )}
+                  </View>
+                  {isCompleted && completedInfo && (
+                    <Text style={{ color: "#888", fontSize: 12, marginTop: 2 }}>
+                      Completado el {formatDate(completedInfo.fecha)}
+                    </Text>
+                  )}
+                </View>
+                <Pressable
+                  onPress={() => startTrainingDay(dia)}
+                  style={{
+                    backgroundColor: isCurrentDay ? "#C6FF00" : "#333",
+                    paddingHorizontal: 12,
+                    paddingVertical: 6,
+                    borderRadius: 20,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: isCurrentDay ? "#0E0E0E" : "#fff",
+                      fontSize: 12,
+                      fontWeight: "600",
+                    }}
+                  >
+                    {isCompleted ? "REPETIR" : "ENTRENAR"}
+                  </Text>
+                </Pressable>
+              </View>
+
+              {items.map((rx) => {
+                const detail = reMap[rx.id]; // 👈 ahora por routineExerciseId
+                const name =
+                  detail?.exercise?.nombre ||
+                  detail?.exercise?.name ||
+                  `Ejercicio #${rx.exerciseId}`;
+                const parsedSeries = parseSeries(rx.series);
+                const totalSeries = parsedSeries.length;
               const repsText =
                 parsedSeries.length > 0 ? parsedSeries.join("/") : "—";
               const img = getExerciseImage(detail);
@@ -305,7 +419,8 @@ export default function RoutineMine() {
               );
             })}
           </View>
-        ))}
+        );
+        })}
       </ScrollView>
 
       {/* botón fijo */}
@@ -320,7 +435,7 @@ export default function RoutineMine() {
         }}
       >
         <Pressable
-          onPress={() => router.push("/training")}
+          onPress={() => startTrainingDay(currentDay)}
           style={{
             backgroundColor: "#C6FF00",
             paddingVertical: 14,
@@ -329,7 +444,7 @@ export default function RoutineMine() {
           }}
         >
           <Text style={{ fontWeight: "700", fontSize: 15 }}>
-            COMENZAR ENTRENAMIENTO
+            COMENZAR DÍA {currentDay}
           </Text>
         </Pressable>
       </View>
