@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "vitalgym-app",
+    "slug": "vitalgym-app",
+    "scheme": "vitalgym",
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}

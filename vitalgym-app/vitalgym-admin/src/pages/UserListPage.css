@@ -1,0 +1,274 @@
+/* Tabla compacta y color fila según estado */
+/* Mantengo la paleta: negro/rojo/vital/verde */
+
+.table-page-wrap {
+  min-height: 100vh;
+  background: linear-gradient(180deg,#000 0%, #000 60%, #e21f45 60%);
+  color: #fff;
+  font-family: "Montserrat", "Arial", sans-serif;
+}
+
+/* header */
+.table-header {
+  padding: 30px 0 8px;
+  border-bottom: 6px solid rgba(226,31,69,0.95);
+}
+.header-inner {
+  max-width:1200px;
+  margin:0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 0 16px;
+}
+.header-inner h2 { margin:0; font-size:36px; font-weight:700; display:flex; gap:8px; align-items:center; }
+.emoji { font-size:30px; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
+
+/* controls */
+.header-controls { display:flex; gap:12px; align-items:center; }
+.search-input {
+  padding:8px 12px;
+  border-radius:8px;
+  border:none;
+  width:420px;
+  max-width:42vw;
+  font-weight:700;
+  background:#eaf2ff;
+  color:#111;
+}
+.btn-create {
+  background:#1f9b5a;
+  color:white;
+  padding:10px 14px;
+  border-radius:8px;
+  border:none;
+  font-weight:700;
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+/* table container */
+.table-container {
+  max-width:1200px;
+  margin:18px auto;
+  padding: 0 16px;
+  overflow-x:auto;
+}
+
+/* table */
+.users-table {
+  width:100%;
+  border-collapse:collapse;
+  background:transparent;
+  min-width:1000px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+}
+.users-table thead th {
+  background:#222528;
+  color:#fff;
+  padding:14px 12px;
+  text-align:left;
+  font-weight:800;
+  font-size:15px;
+  border-bottom: 3px solid rgba(0,0,0,0.4);
+}
+.users-table tbody td {
+  padding:12px;
+  vertical-align:middle;
+  background: rgba(255,255,255,0.95);
+  color:#111;
+  border-bottom:1px solid rgba(0,0,0,0.06);
+}
+
+/* row color states */
+.row-alta td {
+  background: linear-gradient(90deg, #1f9b5a22, rgba(255,255,255,0.95));
+  color: #062b1b; /* dark green text for contrast */
+  font-weight:700;
+}
+.row-baja td {
+  background: linear-gradient(90deg, #e14b4b22, rgba(255,255,255,0.95));
+  color: #4b0b0b; /* dark red text */
+  font-weight:700;
+}
+
+/* small avatar */
+.small-avatar {
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  object-fit:cover;
+  border:3px solid #fff;
+  cursor:pointer;
+}
+.small-avatar.placeholder {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#e1e1e1;color:#111;font-weight:800;
+}
+
+/* center cells */
+.td-center { text-align:center; }
+
+/* name cell */
+.cell-name { font-size:16px; font-weight:800; }
+.cell-muted { color: rgba(0,0,0,0.55); font-weight:700; }
+
+/* actions */
+.td-actions { width:160px; text-align:right; }
+.actions-group { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
+.main-actions { display:flex; gap:8px; }
+.btn {
+  border:none;
+  border-radius:8px;
+  padding:8px 10px;
+  cursor:pointer;
+  font-weight:700;
+}
+.btn-icon { background:#ffffffcc; color:#111; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:8px; }
+.btn-icon:hover { transform:translateY(-2px); }
+.btn-danger { background:#e14b4b; color:#fff; padding:8px 10px; border-radius:8px; }
+.btn-outline-success { background:transparent; border:2px solid #1f9b5a; color:#1f9b5a; border-radius:8px; padding:6px 8px; }
+.btn-outline-danger { background:transparent; border:2px solid #c0392b; color:#c0392b; border-radius:8px; padding:6px 8px; }
+
+.btn-save { background:#1f9b5a; color:#fff; padding:8px 10px; border-radius:8px; }
+.btn-cancel { background:#777; color:#fff; padding:8px 10px; border-radius:8px; }
+
+/* link-style button for secondary */
+.btn-link { background:transparent; color:#f39c12; border:none; font-weight:800; }
+
+/* inline edit actions */
+.inline-edit-actions { display:flex; gap:8px; justify-content:flex-end; }
+
+/* no results */
+.no-results { padding:18px; text-align:center; color:#fff; font-weight:700; }
+
+/* drawer and modal reuse styles (kept compact) */
+.drawer-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; justify-content:flex-end; z-index:1200; }
+.drawer { width:360px; max-width:95%; background:#fff; color:#111; padding:18px; box-shadow: -12px 0 36px rgba(0,0,0,0.6); display:flex; flex-direction:column; gap:12px; }
+.drawer-header { display:flex; justify-content:space-between; align-items:center; }
+.drawer-body { display:flex; flex-direction:column; gap:8px; }
+.drawer-footer { display:flex; gap:8px; justify-content:flex-end; margin-top:8px; }
+
+.modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:1300; }
+.modal { background:#fff; color:#111; padding:20px; border-radius:8px; width:420px; max-width:92%; box-shadow: 0 12px 40px rgba(0,0,0,0.6); }
+
+.form-control { width:100%; padding:8px; border-radius:6px; border:1px solid #ddd; }
+
+/* >>> Añadir al final del CSS para asegurar prioridad sobre reglas anteriores <<< */
+
+/* filas estado: color claro de fondo y texto oscuro legible */
+.users-table tbody tr.row-alta td {
+  background: #56af80 !important;   /* verde claro */
+  color: #06492a !important;        /* texto oscuro verdoso */
+  font-weight: 700 !important;
+  border-bottom: 1px solid rgba(0,0,0,0.4) !important;
+}
+
+.users-table tbody tr.row-baja td {
+  background: #c67269 !important;   /* rojo/rosa claro */
+  color: #5a1a18 !important;        /* texto oscuro rojizo */
+  font-weight: 700 !important;
+  border-bottom: 1px solid rgba(0,0,0,0.4) !important;
+}
+
+/* mantener que cabezera no se vea afectada */
+.users-table thead th { background:#222528; }
+
+/* si quieres efecto hover más visible */
+.users-table tbody tr:hover td {
+  transform: translateY(-1px);
+  transition: all .12s ease;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+/* Añade al final de UserListPage.css o integra en tu archivo CSS */
+
+/* Header centrado y bonito */
+.table-header {
+  padding: 28px 0 12px;
+  border-bottom: 6px solid rgba(226,31,69,0.95);
+  background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.35));
+}
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Título */
+.title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+}
+.emoji { font-size: 34px; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6)); }
+.page-title {
+  margin: 0;
+  color: #ffffff;
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-shadow: 0 4px 12px rgba(0,0,0,0.6);
+}
+
+/* Controls grouped (search centered, button separately) */
+.center-controls { width: 100%; display:flex; justify-content:center; }
+.search-input {
+  width: 86%;
+  max-width: 920px;
+  min-width: 280px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 0;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45), inset 0 -2px 0 rgba(255,255,255,0.03);
+  background: #ffffff;
+  color: #111;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+/* Right control (create button) */
+.right-controls { width:100%; display:flex; justify-content:center; }
+.btn-create {
+  background: #1f9b5a;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 800;
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.45);
+  cursor: pointer;
+}
+
+/* Desktop layout: title center, search center, button to the right */
+@media (min-width: 980px) {
+  .header-inner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .title-group { justify-content: flex-start; }
+  .center-controls { order: 2; width: 60%; justify-content: center; }
+  .right-controls { order: 3; width: 28%; justify-content: flex-end; }
+  .search-input { width: 100%; max-width: 560px; }
+}
+
+/* Small polish */
+.search-input:focus {
+  outline: none;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.45), 0 0 0 4px rgba(31,155,90,0.08);
+}
+
+/* Make sure header spacing consistent with page */
+.table-header + .table-container { margin-top: 12px; }
