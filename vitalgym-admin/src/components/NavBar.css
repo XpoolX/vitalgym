@@ -1,0 +1,59 @@
+.navbar {
+  position: fixed; /* Mantiene la barra en el top */
+  top: 0;
+  left: 0;
+  width: 100%; /* Ocupa todo el ancho */
+  background-color: #000;
+  padding: 15px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 5px solid crimson;
+  box-shadow: 0 0 20px crimson;
+  z-index: 1000;
+}
+.navbar {
+  padding: 20px 30px; /* Puedes ampliar el padding si el logo es muy grande */
+}
+
+.navbar-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.navbar-logo {
+  height: 60px; /* o más, por ejemplo 150px */
+  width: auto; /* mantiene proporción */
+  margin-right: 20px;
+}
+
+
+
+
+.navbar-title {
+  color: crimson;
+  font-size: 2rem;
+  text-shadow: 3px 3px 5px white;
+}
+
+.navbar-links {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+  margin: 0;
+}
+
+.navbar-links li a {
+  color: crimson;
+  font-weight: bold;
+  font-size: 1.1rem;
+  text-decoration: none;
+  transition: 0.3s ease;
+}
+
+.navbar-links li a:hover {
+  color: white;
+  text-shadow: 2px 2px 5px crimson;
+}

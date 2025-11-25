@@ -1,0 +1,6 @@
+# Ignorar node_modules en todo el proyecto
+**/node_modules/
+
+# Ignorar todas las carpetas uploads en cualquier subcarpeta
+**/uploads/
+

@@ -1,0 +1,315 @@
+/* Contenedor general */
+.preview-container {
+  background: #0b0b0b;
+  min-height: 100vh;
+  color: #fff;
+  padding-bottom: 40px;
+}
+.preview-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-top: 80px;
+}
+.preview-title {
+  margin-top: 10px;
+  margin-bottom: 14px;
+  font-weight: 700;
+}
+
+/* A4 folio: tamaño real en mm para html2pdf => facilita paginado correcto */
+.all-folios {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: center;
+}
+
+/* diseño de página A4: usar mm para html2canvas/jsPDF */ /* --- Reemplaza la sección .folio-a4 y .folio-footer existente por esta --- */
+
+.folio-a4 {
+  width: 210mm;
+  /* usar min-height (no height fijo) para evitar overflow extra */
+  min-height: 237mm;
+  box-sizing: border-box;
+  /* reducimos el padding-top para que el contenido suba más */
+  padding: 12mm 18mm 18mm 18mm; /* top right bottom left */
+  background: #ffffff;
+  color: #000;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  /* forzar salto de página después y evitar cortes dentro del folio */
+  page-break-after: always;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  overflow: visible; /* importante: visible para evitar recortes/añadir páginas extra */
+}
+
+/* Footer: quitamos border-top que estaba produciendo una línea fina en el corte */
+.folio-footer {
+  margin-top: auto;
+  padding-top: 8px;
+  /* eliminar border-top: 1px solid #e1e1e1; */
+  /* si quieres una separación visual, usa padding o box-shadow interno en lugar de border-top */
+  box-shadow: none;
+}
+
+/* Si quieres una línea separadora dentro del folio sin riesgo de que se dibuje en la siguiente página,
+   úsal a  .folio-separator dentro del folio y no en el borde inferior. Ejemplo: */
+/*
+.folio-separator {
+  margin-top: 8px;
+  border-top: 1px solid #eee;
+}
+*/
+
+/* Asegúrate de que no haya márgenes globales que añadan espacio extra */
+body,
+html {
+  margin: 0;
+  padding: 0;
+}
+
+/* Opcional: para impresión ocultar nav u otros elementos fijos */
+@media print {
+  nav,
+  .navbar,
+  .site-header {
+    display: none !important;
+  }
+  .folio-a4 {
+    padding-top: 12mm !important;
+  }
+}
+
+/* Cabecera del folio */
+.folio-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6mm;
+}
+.folio-top-left .folio-note {
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: #111;
+}
+.rutina-subtitle {
+  font-size: 30px;
+  color: #0a7a2a; /* verde similar al ejemplo */
+  font-weight: 800;
+  margin-top: 6px;
+}
+.rutina-subtitle2 {
+  font-size: 20px;
+  color: #171a00; /* verde similar al ejemplo */
+  font-weight: 800;
+  margin-top: 6px;
+}
+.folio-day {
+  font-size: 30px;
+  color: #e53935;
+  font-weight: 800;
+}
+
+/* Grid de ejercicios (2 columnas por página) */
+.exercise-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8mm;
+  align-items: start;
+}
+
+/* Bloque de cada ejercicio */
+.exercise-block {
+  background: transparent;
+  padding: 6px 0;
+  color: #000;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 60px;
+}
+
+/* Título y número */
+.exercise-title-row {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+.exercise-number {
+  font-weight: 800;
+  font-size: 18px;
+  width: 28px;
+}
+.exercise-name {
+  font-weight: 800;
+  font-size: 18px;
+}
+.exercise-category {
+  font-size: 12px;
+  color: #444;
+  margin-top: 2px;
+}
+
+/* series y notas (arriba del todo) */
+.exercise-series {
+  font-size: 14px;
+  margin-top: 2px;
+  color: #111;
+}
+
+/* imagen reducida (thumbnail) */
+.exercise-img-wrap {
+  margin-top: 8px;
+  width: 45mm;
+  height: 45mm;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.exercise-img {
+  height: 100%;
+  width: auto;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* NUEVO: repeticiones y descanso debajo de la imagen */
+.exercise-reps {
+  margin-top: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #222;
+}
+.exercise-rest {
+  margin-top: 2px;
+  font-size: 13px;
+  color: #555;
+  font-style: normal;
+}
+
+/* notas pequeñas dentro de ejercicio */
+.exercise-notes {
+  font-size: 12px;
+  color: #333;
+}
+
+/* Footer del folio */
+
+.notas-generales {
+  font-size: 12px;
+  color: #333;
+  margin: 0;
+}
+
+/* Botón exportar */
+.export-btn {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Responsive para pantalla pequeña */
+@media (max-width: 900px) {
+  .exercise-grid {
+    grid-template-columns: 1fr;
+  }
+  .folio-a4 {
+    transform: scale(0.8);
+    transform-origin: top center;
+  }
+}
+
+/* Reglas para impresión / PDF: quitar sombras y colores de fondo extra */
+@media print {
+  body,
+  .preview-container {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .folio-a4 {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 18mm !important;
+  }
+}
+
+/* ------ Reserve fixed space for the title so it never pushes the image down ------ */
+
+/* Contenedor del título dentro de cada ejercicio: reserva espacio fijo (en mm para A4) */
+.exercise-title-area {
+  /* Espacio reservado para hasta 2 líneas de título.
+     Ajusta 14mm si quieres más/menos espacio. */
+  min-height: 14mm;
+  /* Evita que el espacio colapse; alinea el texto arriba */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 2px;
+}
+
+/* Aseguramos que el nombre use máximo 2 líneas y no aumente la altura total */
+exercise-name {
+  font-weight: 800;
+  font-size: 18px;
+  line-height: 1.05;
+  /* límite visual de 2 líneas; si se excede, se permite el wrapping pero no cambia la altura reservada */
+  max-height: calc(2 * 1.1em);
+  overflow-wrap: break-word;
+}
+
+/* Si quieres truncar en la 2ª línea con puntos suspensivos (opcional) */
+.exercise-name--clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Ajuste fino para mantener la imagen siempre alineada sin margen superior variable */
+.exercise-img-wrap {
+  margin-top: 6px; /* pequeño espacio entre la zona de título reservada y la miniatura */
+  width: 45mm;
+  height: 45mm; /* ya tienes altura fija, mantenlo */
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* TAGS: estilo de las etiquetas debajo de la imagen */
+.exercise-tags {
+  margin-top: 8px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* base pill */
+.tag {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: #fff;
+  font-weight: 700;
+}
+
+/* colores por tipo (ajústalos si quieres) */
+.tag--zona { background: #1e88e5; }   /* azul */
+.tag--grupo { background: #00bcd4; }  /* cian/teal */
+.tag--equipo { background: #fbc02d; color: #111; } /* amarillo */
+.tag--nivel { background: #2e7d32; }  /* verde */
+
+/* En móvil reduce tamaño de las pills */
+@media (max-width: 900px) {
+  .tag { padding: 5px 8px; font-size: 11px; }
+}

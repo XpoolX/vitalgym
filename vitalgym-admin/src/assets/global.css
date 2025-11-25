@@ -1,0 +1,81 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+    padding-top: 20px; /* Ajusta según la altura del navbar */
+  font-family: 'Impact', 'Arial Black', sans-serif;
+  background: linear-gradient(135deg, black 50%, crimson 50%);
+  color: white;
+}
+
+a {
+  color: crimson;
+  text-decoration: none;
+}
+
+a:hover {
+  color: white;
+  text-shadow: 2px 2px 5px crimson;
+}
+
+button {
+  font-weight: bold;
+  background-color: crimson;
+  color: white;
+  padding: 10px 20px;
+  border: 2px solid white;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+button:hover {
+  background-color: darkred;
+  transform: scale(1.1);
+}
+
+.container-xl, .container {
+  padding: 30px;
+}
+
+.card {
+  background-color: #111;
+  border: 3px solid crimson;
+  border-radius: 15px;
+  padding: 15px;
+  box-shadow: 0 0 20px crimson;
+}
+
+input, select, textarea {
+  background-color: black;
+  color: white;
+  border: 2px solid crimson;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #aaa;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: rgb(255, 255, 255);
+  /*text-shadow: 3px 3px 5px white;*/
+}
+
+.navbar {
+  background-color: #111;
+  padding: 15px;
+  text-align: center;
+}
+
+
+p {
+    color: #ddd!important;
+    line-height: 1.6;
+}
+label {
+      color: #ddd!important;
+    line-height: 1.6;
+}
