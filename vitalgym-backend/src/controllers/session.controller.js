@@ -6,6 +6,11 @@ const Session = db.Session;
 const SessionExercise = db.SessionExercise;
 const Exercise = db.Exercise;
 
+// Helper function to get available days from routine exercises
+function getAvailableDays(routineExercises) {
+  return [...new Set(routineExercises.map(re => re.dia))].sort((a, b) => a - b);
+}
+
 // Obtener rutina asignada al usuario autenticado
 exports.getMyRoutine = async (req, res) => {
   try {
@@ -148,8 +153,8 @@ exports.getCurrentTrainingDay = async (req, res) => {
       return res.status(404).json({ message: 'No tienes rutina asignada' });
     }
 
-    // Obtener todos los días disponibles en la rutina
-    const diasDisponibles = [...new Set(user.Routine.RoutineExercises.map(re => re.dia))].sort((a, b) => a - b);
+    // Obtener todos los días disponibles en la rutina using helper
+    const diasDisponibles = getAvailableDays(user.Routine.RoutineExercises);
     const currentDay = user.currentTrainingDay || 1;
 
     // Si el día actual es mayor que los días disponibles, volver al día 1
@@ -220,6 +225,14 @@ exports.saveCompletedWorkout = async (req, res) => {
   try {
     const { diaRutina, ejercicios } = req.body;
 
+    // Input validation
+    if (!Number.isInteger(diaRutina) || diaRutina < 1) {
+      return res.status(400).json({ message: 'El día de rutina debe ser un número entero positivo' });
+    }
+    if (!Array.isArray(ejercicios) || ejercicios.length === 0) {
+      return res.status(400).json({ message: 'Debe proporcionar al menos un ejercicio' });
+    }
+
     const user = await User.findByPk(req.user.id, {
       attributes: ['id', 'rutinaAsignadaId', 'currentTrainingDay'],
       include: {
@@ -241,20 +254,19 @@ exports.saveCompletedWorkout = async (req, res) => {
       completado: true
     });
 
-    // Guardar ejercicios con sus series
-    for (const ej of ejercicios) {
-      await SessionExercise.create({
-        sessionId: nuevaSesion.id,
-        nombre: ej.nombre,
-        repeticiones: ej.repeticiones || null,
-        completado: true,
-        routineExerciseId: ej.routineExerciseId,
-        seriesData: ej.seriesData // Array de { serieNum, reps, kg, completed }
-      });
-    }
+    // Guardar ejercicios con sus series using bulkCreate
+    const sessionExercisesData = ejercicios.map(ej => ({
+      sessionId: nuevaSesion.id,
+      nombre: ej.nombre,
+      repeticiones: ej.repeticiones || null,
+      completado: true,
+      routineExerciseId: ej.routineExerciseId,
+      seriesData: ej.seriesData // Array de { serieNum, reps, kg, completed }
+    }));
+    await SessionExercise.bulkCreate(sessionExercisesData);
 
-    // Calcular el siguiente día de entrenamiento
-    const diasDisponibles = [...new Set(user.Routine.RoutineExercises.map(re => re.dia))].sort((a, b) => a - b);
+    // Calcular el siguiente día de entrenamiento using helper
+    const diasDisponibles = getAvailableDays(user.Routine.RoutineExercises);
     const currentIndex = diasDisponibles.indexOf(diaRutina);
     const nextDay = currentIndex >= 0 && currentIndex < diasDisponibles.length - 1
       ? diasDisponibles[currentIndex + 1]
