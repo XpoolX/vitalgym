@@ -72,7 +72,15 @@ exports.getRoutineExerciseById = async (req, res) => {
   try {
     const { id } = req.params; // este es el ID de RoutineExercise (81, 82, ...)
 
-    const re = await RoutineExercise.findByPk(id, {
+    // Verificar que el usuario tiene una rutina asignada
+    const user = await User.findByPk(req.user.id, { attributes: ['rutinaAsignadaId'] });
+    if (!user || !user.rutinaAsignadaId) {
+      return res.status(404).json({ message: 'No tienes rutina asignada' });
+    }
+
+    // Buscar el ejercicio verificando que pertenece a la rutina del usuario
+    const re = await RoutineExercise.findOne({
+      where: { id, routineId: user.rutinaAsignadaId },
       include: [
         {
           model: Exercise,
