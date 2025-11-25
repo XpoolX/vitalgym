@@ -22,8 +22,16 @@ function adminOnly(req, res, next) {
   next();
 }
 
+function clientOnly(req, res, next) {
+  if (req.user?.rol === 'admin') {
+    return res.status(403).json({ message: 'Esta funcionalidad es solo para clientes' });
+  }
+  next();
+}
+
 module.exports = {
   authMiddleware,
-  adminOnly
+  adminOnly,
+  clientOnly
 };
 
