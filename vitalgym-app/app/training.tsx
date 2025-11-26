@@ -140,10 +140,15 @@ export default function TrainingScreen() {
     };
   }, []);
 
-  // Parse seriesData which may come as a string or array from the backend
+  // Parse seriesData which may come as a string, array, or any other format from the backend
   function parseSeriesDataFromBackend(data: any): SerieData[] {
+    // Handle null, undefined, empty cases
     if (!data) return [];
+    
+    // Already an array - return as is
     if (Array.isArray(data)) return data;
+    
+    // String - parse as JSON
     if (typeof data === 'string') {
       try {
         const parsed = JSON.parse(data);
@@ -152,6 +157,12 @@ export default function TrainingScreen() {
         return [];
       }
     }
+    
+    // Object but not array - could be empty object {} from database
+    if (typeof data === 'object') {
+      return [];
+    }
+    
     return [];
   }
 
@@ -165,16 +176,20 @@ export default function TrainingScreen() {
     
     try {
       const lastDataRes = await apiAuth.get(`/client/last-exercise-data/${exercise.id}`);
-      if (lastDataRes.data.found && lastDataRes.data.seriesData) {
-        // Parse seriesData (may be string or array)
-        const seriesArray = parseSeriesDataFromBackend(lastDataRes.data.seriesData);
+      const responseData = lastDataRes.data;
+      
+      // Extra safety: only process if found is true
+      if (responseData && responseData.found === true) {
+        // Parse seriesData (may be string, array, or undefined)
+        const seriesArray = parseSeriesDataFromBackend(responseData.seriesData);
+        
         // Map series number to kg value
         for (const serie of seriesArray) {
-          if (serie.kg) {
+          if (serie && serie.kg) {
             previousKg[serie.serieNum] = serie.kg;
           }
         }
-        previousNotes = lastDataRes.data.notas || "";
+        previousNotes = responseData.notas || "";
       }
     } catch (e) {
       // No previous data available - that's fine

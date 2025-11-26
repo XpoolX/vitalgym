@@ -65,10 +65,15 @@ export default function ExerciseScreen() {
     return `${BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
   }
   
-  // Parse seriesData which may come as a string or array
+  // Parse seriesData which may come as a string, array, or any other format from database
   function parseSeriesData(data: any): Array<{ serieNum: number; reps: number; kg: string; completed: boolean }> {
+    // Handle null, undefined, empty cases
     if (!data) return [];
+    
+    // Already an array - return as is
     if (Array.isArray(data)) return data;
+    
+    // String - parse as JSON
     if (typeof data === 'string') {
       try {
         const parsed = JSON.parse(data);
@@ -77,14 +82,26 @@ export default function ExerciseScreen() {
         return [];
       }
     }
+    
+    // Object but not array - could be empty object {} from database
+    if (typeof data === 'object') {
+      return [];
+    }
+    
     return [];
   }
 
   // Get kg for a specific serie from last workout data
   function getLastKg(serieNum: number): string {
-    if (!lastData?.found || !lastData.seriesData) return "-";
+    // Extra safety checks
+    if (!lastData) return "-";
+    if (!lastData.found) return "-";
+    
+    // Parse seriesData safely
     const seriesArray = parseSeriesData(lastData.seriesData);
-    const serie = seriesArray.find(s => s.serieNum === serieNum);
+    if (!seriesArray || seriesArray.length === 0) return "-";
+    
+    const serie = seriesArray.find(s => s && s.serieNum === serieNum);
     return serie?.kg || "-";
   }
 
