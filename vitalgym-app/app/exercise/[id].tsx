@@ -65,10 +65,26 @@ export default function ExerciseScreen() {
     return `${BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
   }
   
+  // Parse seriesData which may come as a string or array
+  function parseSeriesData(data: any): Array<{ serieNum: number; reps: number; kg: string; completed: boolean }> {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    if (typeof data === 'string') {
+      try {
+        const parsed = JSON.parse(data);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  }
+
   // Get kg for a specific serie from last workout data
   function getLastKg(serieNum: number): string {
     if (!lastData?.found || !lastData.seriesData) return "-";
-    const serie = lastData.seriesData.find(s => s.serieNum === serieNum);
+    const seriesArray = parseSeriesData(lastData.seriesData);
+    const serie = seriesArray.find(s => s.serieNum === serieNum);
     return serie?.kg || "-";
   }
 

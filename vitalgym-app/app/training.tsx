@@ -140,6 +140,21 @@ export default function TrainingScreen() {
     };
   }, []);
 
+  // Parse seriesData which may come as a string or array from the backend
+  function parseSeriesDataFromBackend(data: any): SerieData[] {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    if (typeof data === 'string') {
+      try {
+        const parsed = JSON.parse(data);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  }
+
   // Initialize series for an exercise (with previous kg values if available)
   const initializeExerciseSeries = useCallback(async (exercise: RoutineExercise) => {
     const reps = parseSeries(exercise.series);
@@ -151,8 +166,10 @@ export default function TrainingScreen() {
     try {
       const lastDataRes = await apiAuth.get(`/client/last-exercise-data/${exercise.id}`);
       if (lastDataRes.data.found && lastDataRes.data.seriesData) {
+        // Parse seriesData (may be string or array)
+        const seriesArray = parseSeriesDataFromBackend(lastDataRes.data.seriesData);
         // Map series number to kg value
-        for (const serie of lastDataRes.data.seriesData) {
+        for (const serie of seriesArray) {
           if (serie.kg) {
             previousKg[serie.serieNum] = serie.kg;
           }
