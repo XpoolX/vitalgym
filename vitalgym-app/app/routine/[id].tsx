@@ -7,7 +7,7 @@ import {
   Pressable,
   Image,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { apiAuth } from "../../lib/api";
 
 type RoutineExercise = {
@@ -70,6 +70,10 @@ export default function RoutineMine() {
   const [completedDays, setCompletedDays] = useState<Record<number, CompletedDay>>({});
   // Current training day info
   const [trainingDayInfo, setTrainingDayInfo] = useState<TrainingDayInfo | null>(null);
+  // Expanded days state (accordion)
+  const [expandedDays, setExpandedDays] = useState<Set<number>>(new Set());
+  // Show all days expanded
+  const [showAllExpanded, setShowAllExpanded] = useState(false);
 
   // obtiene 1 routine-exercise por id (el nuevo endpoint)
   const fetchRoutineExerciseById = useCallback(
@@ -104,63 +108,71 @@ export default function RoutineMine() {
       .map((dia) => ({ dia, items: days[dia] }));
   };
 
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      setError(null);
+  // Load data function (can be called on focus)
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // 1) rutina del cliente
+      const { data } = await apiAuth.get("/client/my-routine");
+      setRoutine(data);
+
+      // 2) ids únicos de routine-exercise (OJO, no de exerciseId)
+      const reIds = Array.from(
+        new Set(data.RoutineExercises.map((r: RoutineExercise) => r.id))
+      );
+
+      // 3) descargar detalles en paralelo
+      const results = await Promise.all(
+        reIds.map((rid) => fetchRoutineExerciseById(rid))
+      );
+
+      const map: Record<number, RoutineExerciseDetail> = {};
+      results.forEach((detail, idx) => {
+        const reId = reIds[idx];
+        if (detail) map[reId] = detail;
+      });
+      setReMap(map);
+
+      // 4) Obtener días completados
       try {
-        // 1) rutina del cliente
-        const { data } = await apiAuth.get("/client/my-routine");
-        setRoutine(data);
-
-        // 2) ids únicos de routine-exercise (OJO, no de exerciseId)
-        const reIds = Array.from(
-          new Set(data.RoutineExercises.map((r: RoutineExercise) => r.id))
-        );
-
-        // 3) descargar detalles en paralelo
-        const results = await Promise.all(
-          reIds.map((rid) => fetchRoutineExerciseById(rid))
-        );
-
-        const map: Record<number, RoutineExerciseDetail> = {};
-        results.forEach((detail, idx) => {
-          const reId = reIds[idx];
-          if (detail) map[reId] = detail;
-        });
-        setReMap(map);
-
-        // 4) Obtener días completados
-        try {
-          const completedRes = await apiAuth.get("/client/completed-days");
-          const completedMap: Record<number, CompletedDay> = {};
-          for (const cd of completedRes.data) {
-            completedMap[cd.dia] = cd;
-          }
-          setCompletedDays(completedMap);
-        } catch (e) {
-          console.log("No se pudieron cargar días completados:", e);
+        const completedRes = await apiAuth.get("/client/completed-days");
+        const completedMap: Record<number, CompletedDay> = {};
+        for (const cd of completedRes.data) {
+          completedMap[cd.dia] = cd;
         }
-
-        // 5) Obtener info del día actual de entrenamiento
-        try {
-          const dayInfoRes = await apiAuth.get("/client/current-training-day");
-          setTrainingDayInfo(dayInfoRes.data);
-        } catch (e) {
-          console.log("No se pudo cargar el día de entrenamiento:", e);
-        }
-      } catch (e: any) {
-        setError(
-          e?.response?.data?.message ||
-            e?.message ||
-            "No se pudo cargar la rutina."
-        );
-        setRoutine(null);
-      } finally {
-        setLoading(false);
+        setCompletedDays(completedMap);
+      } catch (e) {
+        console.log("No se pudieron cargar días completados:", e);
       }
-    })();
+
+      // 5) Obtener info del día actual de entrenamiento
+      try {
+        const dayInfoRes = await apiAuth.get("/client/current-training-day");
+        setTrainingDayInfo(dayInfoRes.data);
+        // Set only the current day as expanded by default
+        setExpandedDays(new Set([dayInfoRes.data.currentTrainingDay]));
+      } catch (e) {
+        console.log("No se pudo cargar el día de entrenamiento:", e);
+      }
+    } catch (e: any) {
+      setError(
+        e?.response?.data?.message ||
+          e?.message ||
+          "No se pudo cargar la rutina."
+      );
+      setRoutine(null);
+    } finally {
+      setLoading(false);
+    }
   }, [fetchRoutineExerciseById]);
+
+  // Use useFocusEffect to reload data when screen is focused (including when navigating back)
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
+  );
 
   // parsea "[10,10,10]" → ["10","10","10"]
   function parseSeries(seriesStr: string | undefined) {
@@ -197,6 +209,39 @@ export default function RoutineMine() {
       pathname: "/training",
       params: { dia: String(dia) },
     });
+  }
+
+  // Toggle day expansion
+  function toggleDay(dia: number) {
+    if (showAllExpanded) {
+      // If showing all, switch to single mode with just this day
+      setShowAllExpanded(false);
+      setExpandedDays(new Set([dia]));
+    } else {
+      // Toggle this day, collapse others
+      if (expandedDays.has(dia)) {
+        // If clicking on already expanded day, keep current day expanded
+        const currentDay = trainingDayInfo?.currentTrainingDay || 1;
+        setExpandedDays(new Set([currentDay]));
+      } else {
+        setExpandedDays(new Set([dia]));
+      }
+    }
+  }
+
+  // Toggle show all / hide all
+  function toggleShowAll() {
+    if (showAllExpanded) {
+      // Hide all except current day
+      const currentDay = trainingDayInfo?.currentTrainingDay || 1;
+      setExpandedDays(new Set([currentDay]));
+      setShowAllExpanded(false);
+    } else {
+      // Show all
+      const allDays = days.map(d => d.dia);
+      setExpandedDays(new Set(allDays));
+      setShowAllExpanded(true);
+    }
   }
 
   if (loading) {
@@ -249,9 +294,15 @@ export default function RoutineMine() {
           <Pressable onPress={() => router.back()}>
             <Text style={{ color: "#fff", fontSize: 18 }}>←</Text>
           </Pressable>
-          <Text style={{ color: "white", fontSize: 22, fontWeight: "800" }}>
+          <Text style={{ color: "white", fontSize: 22, fontWeight: "800", flex: 1 }}>
             {routine.nombre || "Mi rutina"}
           </Text>
+          {/* Ver todos / Ocultar todos button */}
+          <Pressable onPress={toggleShowAll}>
+            <Text style={{ color: "#C6FF00", fontSize: 13, fontWeight: "600" }}>
+              {showAllExpanded ? "OCULTAR TODOS" : "VER TODOS"}
+            </Text>
+          </Pressable>
         </View>
 
         {routine.descripcion ? (
@@ -262,20 +313,31 @@ export default function RoutineMine() {
           const isCompleted = !!completedDays[dia];
           const completedInfo = completedDays[dia];
           const isCurrentDay = dia === currentDay;
+          const isExpanded = showAllExpanded || expandedDays.has(dia);
 
           return (
             <View key={dia} style={{ gap: 10 }}>
-              {/* Day header with completion status and train button */}
-              <View
+              {/* Day header with completion status - clickable to expand/collapse */}
+              <Pressable
+                onPress={() => toggleDay(dia)}
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
                   alignItems: "center",
                   marginTop: 10,
+                  backgroundColor: "#151515",
+                  padding: 12,
+                  borderRadius: 12,
+                  borderWidth: isCurrentDay ? 2 : 1,
+                  borderColor: isCurrentDay ? "#C6FF00" : "#232323",
                 }}
               >
                 <View style={{ flex: 1 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                    {/* Expand/collapse indicator */}
+                    <Text style={{ color: "#888", fontSize: 12 }}>
+                      {isExpanded ? "▼" : "▶"}
+                    </Text>
                     <Text
                       style={{
                         color: "white",
@@ -304,13 +366,16 @@ export default function RoutineMine() {
                     )}
                   </View>
                   {isCompleted && completedInfo && (
-                    <Text style={{ color: "#888", fontSize: 12, marginTop: 2 }}>
+                    <Text style={{ color: "#888", fontSize: 12, marginTop: 2, marginLeft: 20 }}>
                       Completado el {formatDate(completedInfo.fecha)}
                     </Text>
                   )}
                 </View>
                 <Pressable
-                  onPress={() => startTrainingDay(dia)}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    startTrainingDay(dia);
+                  }}
                   style={{
                     backgroundColor: isCurrentDay ? "#C6FF00" : "#333",
                     paddingHorizontal: 12,
@@ -328,9 +393,10 @@ export default function RoutineMine() {
                     {isCompleted ? "REPETIR" : "ENTRENAR"}
                   </Text>
                 </Pressable>
-              </View>
+              </Pressable>
 
-              {items.map((rx) => {
+              {/* Exercises list - only show when expanded */}
+              {isExpanded && items.map((rx) => {
                 const detail = reMap[rx.id]; // 👈 ahora por routineExerciseId
                 const name =
                   detail?.exercise?.nombre ||
