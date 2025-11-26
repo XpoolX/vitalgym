@@ -32,6 +32,13 @@ type RoutineExerciseDetail = {
   };
 };
 
+type LastExerciseData = {
+  found: boolean;
+  seriesData?: Array<{ serieNum: number; reps: number; kg: string; completed: boolean }>;
+  notas?: string;
+  fecha?: string;
+};
+
 export default function ExerciseScreen() {
   const { id } = useLocalSearchParams(); // ESTE es el routineExerciseId
   const router = useRouter();
@@ -39,6 +46,7 @@ export default function ExerciseScreen() {
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState<RoutineExerciseDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [lastData, setLastData] = useState<LastExerciseData | null>(null);
 
   // helper para parsear las series que vienen como string
   function parseSeries(seriesStr?: string): number[] {
@@ -56,14 +64,26 @@ export default function ExerciseScreen() {
     if (path.startsWith("http")) return path;
     return `${BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
   }
+  
+  // Get kg for a specific serie from last workout data
+  function getLastKg(serieNum: number): string {
+    if (!lastData?.found || !lastData.seriesData) return "-";
+    const serie = lastData.seriesData.find(s => s.serieNum === serieNum);
+    return serie?.kg || "-";
+  }
 
   useEffect(() => {
     (async () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await apiAuth.get(`/client/routine-exercises/${id}`);
-        setDetail(res.data);
+        // Fetch exercise details and last workout data in parallel
+        const [detailRes, lastDataRes] = await Promise.all([
+          apiAuth.get(`/client/routine-exercises/${id}`),
+          apiAuth.get(`/client/last-exercise-data/${id}`).catch(() => ({ data: { found: false } }))
+        ]);
+        setDetail(detailRes.data);
+        setLastData(lastDataRes.data);
       } catch (e: any) {
         setError(
           e?.response?.data?.message ||
@@ -163,7 +183,7 @@ export default function ExerciseScreen() {
           <View
             style={{
               flexDirection: "row",
-              justifyContent: "space-between",
+              justifyContent: "space-around",
               alignItems: "center",
             }}
           >
@@ -181,78 +201,26 @@ export default function ExerciseScreen() {
               <Text style={{ color: "white" }}>📊</Text>
               <Text style={{ color: "white", fontSize: 12 }}>Analíticas</Text>
             </View>
-            <View style={{ alignItems: "center", gap: 4 }}>
-              <Text style={{ color: "white" }}>🏋</Text>
-              <Text style={{ color: "white", fontSize: 12 }}>Discos</Text>
-            </View>
           </View>
 
-          {/* Sets de calentamiento (mock) */}
-          <View style={{ gap: 10 }}>
-            <View
-              style={{ flexDirection: "row", justifyContent: "space-between" }}
-            >
-              <Text
-                style={{ color: "white", fontSize: 15, fontWeight: "700" }}
-              >
-                Sets de calentamiento
-              </Text>
-              <Pressable onPress={() => {}}>
-                <Text style={{ color: "#C6FF00" }}>Ocultar</Text>
-              </Pressable>
-            </View>
-
+          {/* Last workout date indicator */}
+          {lastData?.found && lastData?.fecha && (
             <View
               style={{
+                backgroundColor: "#1a2e1a",
+                borderRadius: 8,
+                padding: 10,
                 flexDirection: "row",
-                gap: 12,
                 alignItems: "center",
+                gap: 8,
               }}
             >
-              <View
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 10,
-                  backgroundColor: "#151515",
-                  borderWidth: 1,
-                  borderColor: "#232323",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Text style={{ color: "white" }}>1</Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  backgroundColor: "#151515",
-                  borderWidth: 1,
-                  borderColor: "#232323",
-                  borderRadius: 10,
-                  padding: 10,
-                }}
-              >
-                <Text style={{ color: "#BDBDBD", fontSize: 12 }}>
-                  REPETICIONES
-                </Text>
-                <Text style={{ color: "white", fontSize: 15 }}>12</Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  backgroundColor: "#151515",
-                  borderWidth: 1,
-                  borderColor: "#232323",
-                  borderRadius: 10,
-                  padding: 10,
-                }}
-              >
-                <Text style={{ color: "#BDBDBD", fontSize: 12 }}>TOTAL KG</Text>
-                <Text style={{ color: "white", fontSize: 15 }}>27.5</Text>
-              </View>
+              <Text style={{ color: "#C6FF00" }}>✓</Text>
+              <Text style={{ color: "#C6FF00", fontSize: 13 }}>
+                Último entrenamiento: {new Date(lastData.fecha).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}
+              </Text>
             </View>
-          </View>
+          )}
 
           {/* Series efectivas */}
           <View style={{ gap: 10 }}>
@@ -312,44 +280,57 @@ export default function ExerciseScreen() {
                       flex: 1,
                       backgroundColor: "#151515",
                       borderWidth: 1,
-                      borderColor: "#232323",
+                      borderColor: getLastKg(index + 1) !== "-" ? "#C6FF00" : "#232323",
                       borderRadius: 10,
                       padding: 10,
                     }}
                   >
                     <Text style={{ color: "#BDBDBD", fontSize: 12 }}>
-                      TOTAL KG
+                      ÚLTIMO KG
                     </Text>
-                    <Text style={{ color: "white", fontSize: 15 }}>55</Text>
+                    <Text style={{ color: "white", fontSize: 15 }}>{getLastKg(index + 1)}</Text>
                   </View>
                 </View>
               ))
             )}
-
-            <Pressable onPress={() => {}} style={{ marginTop: 4 }}>
-              <Text style={{ color: "#C6FF00", fontWeight: "600" }}>
-                + Añadir serie
-              </Text>
-            </Pressable>
           </View>
 
-          {/* Notas */}
+          {/* Notas del entrenador */}
+          {detail.notas && detail.notas.trim().length > 0 && (
+            <View style={{ gap: 6 }}>
+              <Text style={{ color: "white", fontWeight: "700" }}>Notas del entrenador</Text>
+              <View
+                style={{
+                  backgroundColor: "#151515",
+                  borderWidth: 1,
+                  borderColor: "#232323",
+                  borderRadius: 12,
+                  minHeight: 70,
+                  padding: 10,
+                }}
+              >
+                <Text style={{ color: "#BDBDBD" }}>
+                  {detail.notas}
+                </Text>
+              </View>
+            </View>
+          )}
+          
+          {/* Mis notas (del último entrenamiento) */}
           <View style={{ gap: 6 }}>
-            <Text style={{ color: "white", fontWeight: "700" }}>Notas</Text>
+            <Text style={{ color: "white", fontWeight: "700" }}>Mis notas</Text>
             <View
               style={{
                 backgroundColor: "#151515",
                 borderWidth: 1,
-                borderColor: "#232323",
+                borderColor: lastData?.notas ? "#C6FF00" : "#232323",
                 borderRadius: 12,
                 minHeight: 70,
                 padding: 10,
               }}
             >
-              <Text style={{ color: "#8A8A8A" }}>
-                {detail.notas && detail.notas.trim().length > 0
-                  ? detail.notas
-                  : "Aquí puedes escribir cómo te fue el ejercicio..."}
+              <Text style={{ color: lastData?.notas ? "white" : "#8A8A8A" }}>
+                {lastData?.notas || "Sin notas del último entrenamiento."}
               </Text>
             </View>
           </View>
