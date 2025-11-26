@@ -47,6 +47,7 @@ exports.login = async (req, res) => {
       user: { id: usuario.id, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol, imagen: usuario.imagenUrl, estado: usuario.estado }
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({ message: 'Error al hacer login', error: error.message });
   }
 };

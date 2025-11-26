@@ -21,6 +21,7 @@ db.SessionExercise = require('./SessionExercise')(sequelize, Sequelize);
 db.User.belongsTo(db.Routine, { foreignKey: 'rutinaAsignadaId' });
 db.Routine.hasMany(db.RoutineExercise, { foreignKey: 'routineId' });
 db.Session.hasMany(db.SessionExercise, { foreignKey: 'sessionId' });
+db.SessionExercise.belongsTo(db.Session, { foreignKey: 'sessionId' });
 db.User.hasMany(db.Session, { foreignKey: 'userId' });
 
 module.exports = db;

@@ -10,7 +10,8 @@ module.exports = (sequelize, DataTypes) => {
     imagenUrl: DataTypes.STRING,
     idLlave: DataTypes.STRING,
     direccion: DataTypes.STRING,
-    telefono: DataTypes.STRING
+    telefono: DataTypes.STRING,
+    currentTrainingDay: { type: DataTypes.INTEGER, defaultValue: 1 }
   }, {
     tableName: 'Users',
     timestamps: true
