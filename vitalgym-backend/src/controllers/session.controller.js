@@ -261,7 +261,8 @@ exports.saveCompletedWorkout = async (req, res) => {
       repeticiones: ej.repeticiones || null,
       completado: true,
       routineExerciseId: ej.routineExerciseId,
-      seriesData: ej.seriesData // Array de { serieNum, reps, kg, completed }
+      seriesData: ej.seriesData, // Array de { serieNum, reps, kg, completed }
+      notas: ej.notas || null // User notes for this exercise
     }));
     await SessionExercise.bulkCreate(sessionExercisesData);
 
@@ -321,5 +322,51 @@ exports.getCompletedDays = async (req, res) => {
   } catch (error) {
     console.error('Error getting completed days:', error);
     res.status(500).json({ message: 'Error al obtener días completados', error: error.message });
+  }
+};
+
+// Obtener datos del último entrenamiento de un ejercicio específico
+exports.getLastExerciseData = async (req, res) => {
+  try {
+    const { routineExerciseId } = req.params;
+    const reId = parseInt(routineExerciseId, 10);
+
+    if (!Number.isInteger(reId) || reId < 1) {
+      return res.status(400).json({ message: 'ID de ejercicio inválido' });
+    }
+
+    const user = await User.findByPk(req.user.id, { attributes: ['rutinaAsignadaId'] });
+    if (!user || !user.rutinaAsignadaId) {
+      return res.status(404).json({ message: 'No tienes rutina asignada' });
+    }
+
+    // Buscar el último SessionExercise con este routineExerciseId
+    const lastExercise = await SessionExercise.findOne({
+      where: { routineExerciseId: reId },
+      include: [{
+        model: Session,
+        where: { 
+          userId: req.user.id,
+          routineId: user.rutinaAsignadaId,
+          completado: true
+        },
+        attributes: ['fecha']
+      }],
+      order: [[Session, 'fecha', 'DESC']]
+    });
+
+    if (!lastExercise) {
+      return res.json({ found: false });
+    }
+
+    res.json({
+      found: true,
+      seriesData: lastExercise.seriesData || [],
+      notas: lastExercise.notas || '',
+      fecha: lastExercise.Session?.fecha
+    });
+  } catch (error) {
+    console.error('Error getting last exercise data:', error);
+    res.status(500).json({ message: 'Error al obtener datos del último entrenamiento', error: error.message });
   }
 };

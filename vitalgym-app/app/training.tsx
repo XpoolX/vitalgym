@@ -71,6 +71,9 @@ export default function TrainingScreen() {
   // User notes for current exercise
   const [exerciseNotes, setExerciseNotes] = useState<string>("");
   
+  // Last exercise data (previous kg and notes)
+  const [lastExerciseData, setLastExerciseData] = useState<Record<number, { seriesData: SerieData[], notas: string }>>({});
+  
   // Instructions modal
   const [showInstructions, setShowInstructions] = useState(false);
   
@@ -137,20 +140,41 @@ export default function TrainingScreen() {
     };
   }, []);
 
-  // Initialize series for an exercise
-  const initializeExerciseSeries = useCallback((exercise: RoutineExercise) => {
+  // Initialize series for an exercise (with previous kg values if available)
+  const initializeExerciseSeries = useCallback(async (exercise: RoutineExercise) => {
     const reps = parseSeries(exercise.series);
+    
+    // Try to fetch last exercise data for kg and notes
+    let previousKg: Record<number, string> = {};
+    let previousNotes = "";
+    
+    try {
+      const lastDataRes = await apiAuth.get(`/client/last-exercise-data/${exercise.id}`);
+      if (lastDataRes.data.found && lastDataRes.data.seriesData) {
+        // Map series number to kg value
+        for (const serie of lastDataRes.data.seriesData) {
+          if (serie.kg) {
+            previousKg[serie.serieNum] = serie.kg;
+          }
+        }
+        previousNotes = lastDataRes.data.notas || "";
+      }
+    } catch (e) {
+      // No previous data available - that's fine
+      console.log("No previous exercise data found");
+    }
+    
     const initialSeries: SerieData[] = reps.map((rep, idx) => ({
       serieNum: idx + 1,
       reps: rep,
-      kg: "",
+      kg: previousKg[idx + 1] || "", // Pre-fill with previous kg if available
       completed: false,
     }));
     setSeriesData(initialSeries);
     setCurrentSerieIndex(0);
     setIsResting(false);
     setRestTimeLeft(0);
-    setExerciseNotes("");
+    setExerciseNotes(previousNotes); // Pre-fill with previous notes
   }, []);
 
   // Timer effect
