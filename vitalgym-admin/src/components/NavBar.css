@@ -46,7 +46,7 @@
 }
 
 .navbar-links li a {
-  color: #ff8a9a; /* Lighter, less strident pink/red */
+  color: #ffffff; /* White links as requested */
   font-weight: bold;
   font-size: 1.1rem;
   text-decoration: none;
