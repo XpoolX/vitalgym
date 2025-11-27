@@ -2,7 +2,7 @@
 .dashboard-container {
   min-height: 100vh;
   background: linear-gradient(180deg, #0a0a0f 0%, #111118 50%, #0a0a0f 100%);
-  padding-top: 100px;
+  padding-top: 150px; /* Navbar (100px) + PageHeader (~50px) */
 }
 
 .dashboard-content {
