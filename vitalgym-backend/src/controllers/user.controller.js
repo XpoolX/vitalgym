@@ -110,12 +110,30 @@ exports.updateUser = async (req, res) => {
       datos.diaPago = null;
     } else if (datos.diaPago) {
       datos.diaPago = parseInt(datos.diaPago, 10);
+      if (isNaN(datos.diaPago)) datos.diaPago = null;
     }
 
     // Limpiar formaPago si está vacío
     if (datos.formaPago === '' || datos.formaPago === undefined) {
       datos.formaPago = null;
     }
+
+    // Limpiar fechaNacimiento si está vacío
+    if (datos.fechaNacimiento === '' || datos.fechaNacimiento === undefined) {
+      datos.fechaNacimiento = null;
+    }
+
+    // Limpiar campos de dirección vacíos
+    if (datos.calle === '') datos.calle = null;
+    if (datos.codigoPostal === '') datos.codigoPostal = null;
+    if (datos.piso === '') datos.piso = null;
+    if (datos.puerta === '') datos.puerta = null;
+    if (datos.poblacion === '') datos.poblacion = null;
+
+    // Limpiar otros campos opcionales
+    if (datos.observaciones === '') datos.observaciones = null;
+    if (datos.idLlave === '') datos.idLlave = null;
+    if (datos.telefono === '') datos.telefono = null;
 
     await User.update(datos, { where: { id } });
     res.json({ message: 'Usuario actualizado' });

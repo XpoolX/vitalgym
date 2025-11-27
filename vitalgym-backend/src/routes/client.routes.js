@@ -6,6 +6,7 @@ const { authMiddleware } = require('../middlewares/auth.middleware');
 router.use(authMiddleware);
 
 router.get('/my-routine', controller.getMyRoutine);
+router.get('/my-stats', controller.getMyStats);
 router.post('/start-session', controller.startSession);
 router.get('/history', controller.getHistory);
 router.get('/routine-exercises/:id', controller.getRoutineExerciseById);

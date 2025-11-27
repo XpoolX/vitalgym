@@ -370,3 +370,86 @@ exports.getLastExerciseData = async (req, res) => {
     res.status(500).json({ message: 'Error al obtener datos del último entrenamiento', error: error.message });
   }
 };
+
+// Obtener estadísticas del usuario autenticado
+exports.getMyStats = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Constantes para cálculo de promedios
+    const WEEKS_IN_MONTH = 4;
+    const MONTHS_IN_YEAR = 12;
+
+    const user = await User.findByPk(userId, { attributes: { exclude: ['password'] } });
+    if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+
+    // Obtener todas las sesiones del usuario
+    const sessions = await Session.findAll({
+      where: { userId: userId, completado: true },
+      order: [['fecha', 'DESC']],
+      attributes: ['id', 'fecha', 'diaRutina', 'completado']
+    });
+
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+
+    // Calcular estadísticas
+    const sessionsLastWeek = sessions.filter(s => new Date(s.fecha) >= oneWeekAgo);
+    const sessionsLastMonth = sessions.filter(s => new Date(s.fecha) >= oneMonthAgo);
+    const sessionsLastYear = sessions.filter(s => new Date(s.fecha) >= oneYearAgo);
+
+    // Obtener la última sesión
+    const ultimaSesion = sessions.length > 0 ? sessions[0].fecha : null;
+
+    // Calcular medias
+    const entrenosPorSemana = sessionsLastMonth.length / WEEKS_IN_MONTH;
+    const entrenosPorMes = sessionsLastYear.length / MONTHS_IN_YEAR;
+
+    // Calcular racha actual de días consecutivos
+    let rachaActual = 0;
+    if (sessions.length > 0) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // Agrupar por día
+      const diasEntrenados = new Set();
+      sessions.forEach(s => {
+        const fecha = new Date(s.fecha);
+        fecha.setHours(0, 0, 0, 0);
+        diasEntrenados.add(fecha.getTime());
+      });
+      
+      // Contar racha desde hoy o ayer
+      let checkDate = new Date(today);
+      // Si hoy no entrenó, empezar desde ayer
+      if (!diasEntrenados.has(checkDate.getTime())) {
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
+      
+      while (diasEntrenados.has(checkDate.getTime())) {
+        rachaActual++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
+    }
+
+    // Total de sesiones completadas
+    const totalSesionesCompletadas = sessions.length;
+
+    res.json({
+      ultimaSesion,
+      entrenosSemana: sessionsLastWeek.length,
+      entrenosMes: sessionsLastMonth.length,
+      entrenosAnio: sessionsLastYear.length,
+      promedioSemanal: Math.round(entrenosPorSemana * 10) / 10,
+      promedioMensual: Math.round(entrenosPorMes * 10) / 10,
+      totalEntrenos: totalSesionesCompletadas,
+      rachaActual,
+      fechaRegistro: user.createdAt
+    });
+  } catch (error) {
+    console.error('Error al obtener estadísticas del usuario:', error);
+    res.status(500).json({ message: 'Error al obtener estadísticas', error: error.message });
+  }
+};
