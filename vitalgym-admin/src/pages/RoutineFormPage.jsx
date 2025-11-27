@@ -192,29 +192,29 @@ export default function RoutineFormPage() {
 
         <div className="card-body bg-black text-white">
           <div className="mb-3">
-            <label className="form-label text-muted small mb-1">📝 Nombre de la rutina</label>
+            <label className="form-label small mb-1" style={{ color: '#aaa' }}>📝 Nombre de la rutina</label>
             <input
               className="form-control bg-dark text-white border-danger"
               placeholder="Ej: Rutina de hipertrofia, Full Body principiantes..."
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
             />
-            <small className="text-muted">Nombre descriptivo para identificar la rutina</small>
+            <small style={{ color: "#888" }}>Nombre descriptivo para identificar la rutina</small>
           </div>
 
           <div className="mb-3">
-            <label className="form-label text-muted small mb-1">📄 Descripción</label>
+            <label className="form-label small mb-1" style={{ color: '#aaa' }}>📄 Descripción</label>
             <textarea
               className="form-control bg-dark text-white border-danger"
               placeholder="Describe el objetivo de esta rutina, para quién está diseñada..."
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value)}
             />
-            <small className="text-muted">Objetivo y detalles de la rutina (opcional)</small>
+            <small style={{ color: "#888" }}>Objetivo y detalles de la rutina (opcional)</small>
           </div>
 
           <div className="mb-3">
-            <label className="form-label text-muted small mb-1">📅 Número de días de entrenamiento</label>
+            <label className="form-label small mb-1" style={{ color: '#aaa' }}>📅 Número de días de entrenamiento</label>
             <input
               type="number"
               min="1"
@@ -224,7 +224,7 @@ export default function RoutineFormPage() {
               value={dias}
               onChange={(e) => setDias(Math.max(1, parseInt(e.target.value || 1, 10)))}
             />
-            <small className="text-muted">¿Cuántos días a la semana entrena el usuario?</small>
+            <small style={{ color: "#888" }}>¿Cuántos días a la semana entrena el usuario?</small>
           </div>
 
           {[...Array(dias)].map((_, diaIndex) => {
@@ -246,7 +246,7 @@ export default function RoutineFormPage() {
                     <div key={i} className="card p-3 mb-3 bg-dark text-white border-danger">
                       <div className="row g-2 align-items-start">
                         <div className="col-md-4">
-                          <label className="form-label small text-muted">🏋️ Ejercicio</label>
+                          <label className="form-label small" style={{ color: '#aaa' }}>🏋️ Ejercicio</label>
                           <div className="exercise-dropdown-container position-relative">
                             <div
                               className="form-control bg-dark text-white border-danger d-flex align-items-center justify-content-between"
@@ -260,7 +260,7 @@ export default function RoutineFormPage() {
                                 <div className="d-flex align-items-center gap-2" style={{ overflow: 'hidden' }}>
                                   {selectedExercise.imagenUrl && (
                                     <img 
-                                      src={`https://vitalgym.fit${selectedExercise.imagenUrl}`} 
+                                      src={selectedExercise.imagenUrl} 
                                       alt="" 
                                       style={{ width: '28px', height: '28px', borderRadius: '4px', objectFit: 'cover' }}
                                     />
@@ -270,7 +270,7 @@ export default function RoutineFormPage() {
                                   </span>
                                 </div>
                               ) : (
-                                <span className="text-muted">Selecciona ejercicio...</span>
+                                <span style={{ color: "#888" }}>Selecciona ejercicio...</span>
                               )}
                               <span style={{ marginLeft: '8px' }}>{isOpen ? '▲' : '▼'}</span>
                             </div>
@@ -302,7 +302,7 @@ export default function RoutineFormPage() {
                                 </div>
                                 
                                 {filteredGroups.length === 0 ? (
-                                  <div className="p-3 text-muted text-center">
+                                  <div className="p-3 text-center" style={{ color: '#888' }}>
                                     No se encontraron ejercicios
                                   </div>
                                 ) : (
@@ -330,7 +330,7 @@ export default function RoutineFormPage() {
                                           >
                                             {ejercicio.imagenUrl ? (
                                               <img 
-                                                src={`https://vitalgym.fit${ejercicio.imagenUrl}`} 
+                                                src={ejercicio.imagenUrl} 
                                                 alt="" 
                                                 style={{ width: '36px', height: '36px', borderRadius: '6px', objectFit: 'cover' }}
                                               />
@@ -353,7 +353,7 @@ export default function RoutineFormPage() {
                                             <div style={{ flex: 1, overflow: 'hidden' }}>
                                               <div style={{ fontWeight: '600', fontSize: '14px' }}>{ejercicio.nombre}</div>
                                               {ejercicio.zonaCorporal && (
-                                                <div className="text-muted" style={{ fontSize: '11px' }}>
+                                                <div style={{ fontSize: '11px', color: '#aaa' }}>
                                                   {ejercicio.zonaCorporal}
                                                 </div>
                                               )}
@@ -368,11 +368,11 @@ export default function RoutineFormPage() {
                               </div>
                             )}
                           </div>
-                          <small className="text-muted">Busca y selecciona el ejercicio</small>
+                          <small style={{ color: "#888" }}>Busca y selecciona el ejercicio</small>
                         </div>
 
                         <div className="col-md-4">
-                          <label className="form-label small text-muted">🔢 Series y repeticiones</label>
+                          <label className="form-label small" style={{ color: '#aaa' }}>🔢 Series y repeticiones</label>
                           <div className="d-flex flex-wrap align-items-center gap-1">
                             {Array.isArray(ej.series) && ej.series.map((serie, idx) => (
                               <input
@@ -412,11 +412,11 @@ export default function RoutineFormPage() {
                               ➖
                             </button>
                           </div>
-                          <small className="text-muted">Cada número es las reps de una serie</small>
+                          <small style={{ color: "#888" }}>Cada número es las reps de una serie</small>
                         </div>
 
                         <div className="col-md-2">
-                          <label className="form-label small text-muted">⏱️ Descanso</label>
+                          <label className="form-label small" style={{ color: '#aaa' }}>⏱️ Descanso</label>
                           <div className="input-group">
                             <input
                               type="number"
@@ -425,13 +425,13 @@ export default function RoutineFormPage() {
                               value={ej.descansoSegundos}
                               onChange={(ev) => actualizarCampo(dia, i, 'descansoSegundos', parseInt(ev.target.value || 60, 10))}
                             />
-                            <span className="input-group-text bg-dark text-muted border-danger">s</span>
+                            <span className="input-group-text bg-dark border-danger" style={{ color: '#888' }}>s</span>
                           </div>
-                          <small className="text-muted">Segundos entre series</small>
+                          <small style={{ color: "#888" }}>Segundos entre series</small>
                         </div>
 
                         <div className="col-md-2 text-end">
-                          <label className="form-label small text-muted d-block">&nbsp;</label>
+                          <label className="form-label small d-block" style={{ color: '#aaa' }}>&nbsp;</label>
                           <button
                             type="button"
                             className="btn btn-outline-danger"
@@ -443,7 +443,7 @@ export default function RoutineFormPage() {
                         </div>
 
                         <div className="col-12 mt-2">
-                          <label className="form-label small text-muted">📝 Notas personales</label>
+                          <label className="form-label small" style={{ color: '#aaa' }}>📝 Notas personales</label>
                           <textarea
                             className="form-control bg-dark text-white border-danger"
                             placeholder="Instrucciones especiales, variaciones, tips..."
@@ -451,7 +451,7 @@ export default function RoutineFormPage() {
                             onChange={(ev) => actualizarCampo(dia, i, 'notas', ev.target.value)}
                             rows={2}
                           />
-                          <small className="text-muted">Indicaciones específicas para este ejercicio (opcional)</small>
+                          <small style={{ color: "#888" }}>Indicaciones específicas para este ejercicio (opcional)</small>
                         </div>
                       </div>
                     </div>
