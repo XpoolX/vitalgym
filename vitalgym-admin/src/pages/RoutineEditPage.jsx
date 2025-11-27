@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api/axios';
 import NavBar from '../components/NavBar';
+import PageHeader from '../components/PageHeader';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPenToSquare, faFloppyDisk, faPlus, faMinus, faTrash, faFire, faCalendarDays, faDumbbell } from '@fortawesome/free-solid-svg-icons';
 
 export default function RoutineEditPage() {
   const { id } = useParams();
@@ -107,67 +110,85 @@ export default function RoutineEditPage() {
   };
 
   return (
-    <div className="container-xl mt-5 pt-4">
+    <div className="page-container" style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #0a0a0f 0%, #111118 50%, #0a0a0f 100%)', paddingTop: '100px' }}>
       <NavBar />
-      <div className="card shadow-lg border-danger">
-        <div className="card-header bg-dark text-white">
-          <h5 className="mb-0">💪 Editar rutina potente</h5>
-        </div>
-        <div className="card-body bg-black text-white">
-          <input className="form-control bg-dark text-white border-danger mb-3" placeholder="Nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} />
-          <textarea className="form-control bg-dark text-white border-danger mb-3" placeholder="Descripción" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} />
-          <label>📅 Número de días</label>
-          <input type="number" min="1" max="7" className="form-control bg-dark text-white border-danger mb-3" value={dias} onChange={manejarCambioDias} />
+      <div className="page-content" style={{ maxWidth: '1400px', margin: '0 auto', padding: '24px' }}>
+        <PageHeader 
+          icon={faPenToSquare} 
+          title="Editar Rutina" 
+          subtitle="Modifica los ejercicios y configuración de la rutina"
+        />
+        
+        <div className="card shadow-lg border-danger" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+          <div className="card-header bg-dark text-white" style={{ padding: '20px 24px' }}>
+            <h5 className="mb-0"><FontAwesomeIcon icon={faDumbbell} /> Editar rutina potente</h5>
+          </div>
+          <div className="card-body bg-black text-white" style={{ padding: '24px' }}>
+            <input className="form-control bg-dark text-white border-danger mb-3" placeholder="Nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} />
+            <textarea className="form-control bg-dark text-white border-danger mb-3" placeholder="Descripción" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} />
+            <label><FontAwesomeIcon icon={faCalendarDays} /> Número de días</label>
+            <input type="number" min="1" max="7" className="form-control bg-dark text-white border-danger mb-3" value={dias} onChange={manejarCambioDias} />
 
-          {[...Array(dias)].map((_, diaIndex) => {
-            const dia = diaIndex + 1;
-            return (
-              <div key={dia} className="mb-4 p-3 border border-danger rounded">
-                <h6>🔥 Día {dia}</h6>
-                <button className="btn btn-outline-danger mb-3" onClick={() => agregarEjercicio(dia)}>➕ Añadir ejercicio</button>
-                {ejerciciosPorDia[dia] && ejerciciosPorDia[dia].map((ej, i) => (
-                  <div key={i} className="card p-3 mb-3 bg-dark text-white border-danger">
-                    <div className="row g-2 align-items-center">
-                      <div className="col-md-3">
-                        <label>Ejercicio</label>
-                        <select className="form-select bg-dark text-white border-danger" value={ej.id || ''} onChange={(e) => actualizarCampo(dia, i, 'id', parseInt(e.target.value))}>
-                          <option value="">Selecciona ejercicio</option>
-                          {ejerciciosBase.map((e) => (<option key={e.id} value={e.id}>{e.nombre}</option>))}
-                        </select>
-                      </div>
-                      <div className="col-md-4">
-                        <label>Series y reps</label>
-                        <div className="d-flex gap-1 flex-wrap align-items-center">
-                          {ej.series.map((serie, idx) => (
-                            <input key={idx} type="number" value={serie} className="form-control bg-dark text-white border-danger" style={{ width: '60px' }} onChange={(e) => {
-                              const nuevos = [...ej.series];
-                              nuevos[idx] = e.target.value;
-                              actualizarCampo(dia, i, 'series', nuevos);
-                            }} />
-                          ))}
-                          <button className="btn btn-outline-primary p-2" onClick={() => actualizarCampo(dia, i, 'series', [...ej.series, ej.series[ej.series.length - 1] || 10])}>➕</button>
-                          <button className="btn btn-outline-secondary p-2" onClick={() => actualizarCampo(dia, i, 'series', ej.series.length > 1 ? ej.series.slice(0, -1) : ej.series)}>➖</button>
+            {[...Array(dias)].map((_, diaIndex) => {
+              const dia = diaIndex + 1;
+              return (
+                <div key={dia} className="mb-4 p-3 border border-danger rounded" style={{ borderRadius: '12px' }}>
+                  <h6><FontAwesomeIcon icon={faFire} /> Día {dia}</h6>
+                  <button className="btn btn-outline-danger mb-3" onClick={() => agregarEjercicio(dia)}>
+                    <FontAwesomeIcon icon={faPlus} /> Añadir ejercicio
+                  </button>
+                  {ejerciciosPorDia[dia] && ejerciciosPorDia[dia].map((ej, i) => (
+                    <div key={i} className="card p-3 mb-3 bg-dark text-white border-danger" style={{ borderRadius: '12px' }}>
+                      <div className="row g-2 align-items-center">
+                        <div className="col-md-3">
+                          <label>Ejercicio</label>
+                          <select className="form-select bg-dark text-white border-danger" value={ej.id || ''} onChange={(e) => actualizarCampo(dia, i, 'id', parseInt(e.target.value))}>
+                            <option value="">Selecciona ejercicio</option>
+                            {ejerciciosBase.map((e) => (<option key={e.id} value={e.id}>{e.nombre}</option>))}
+                          </select>
+                        </div>
+                        <div className="col-md-4">
+                          <label>Series y reps</label>
+                          <div className="d-flex gap-1 flex-wrap align-items-center">
+                            {ej.series.map((serie, idx) => (
+                              <input key={idx} type="number" value={serie} className="form-control bg-dark text-white border-danger" style={{ width: '60px' }} onChange={(e) => {
+                                const nuevos = [...ej.series];
+                                nuevos[idx] = e.target.value;
+                                actualizarCampo(dia, i, 'series', nuevos);
+                              }} />
+                            ))}
+                            <button className="btn btn-outline-primary p-2" onClick={() => actualizarCampo(dia, i, 'series', [...ej.series, ej.series[ej.series.length - 1] || 10])}>
+                              <FontAwesomeIcon icon={faPlus} />
+                            </button>
+                            <button className="btn btn-outline-secondary p-2" onClick={() => actualizarCampo(dia, i, 'series', ej.series.length > 1 ? ej.series.slice(0, -1) : ej.series)}>
+                              <FontAwesomeIcon icon={faMinus} />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="col-md-2">
+                          <label>Descanso (s)</label>
+                          <input type="number" value={ej.descansoSegundos} className="form-control bg-dark text-white border-danger" style={{ width: '80px' }} onChange={(e) => actualizarCampo(dia, i, 'descansoSegundos', parseInt(e.target.value))} />
+                        </div>
+                        <div className="col-md-2 text-end">
+                          <button className="btn btn-outline-danger" onClick={() => eliminarEjercicio(dia, i)}>
+                            <FontAwesomeIcon icon={faTrash} />
+                          </button>
+                        </div>
+                        <div className="col-12 mt-2">
+                          <label>Notas</label>
+                          <textarea className="form-control bg-dark text-white border-danger" rows="2" placeholder="Notas..." value={ej.notas} onChange={(e) => actualizarCampo(dia, i, 'notas', e.target.value)} />
                         </div>
                       </div>
-                      <div className="col-md-2">
-                        <label>Descanso (s)</label>
-                        <input type="number" value={ej.descansoSegundos} className="form-control bg-dark text-white border-danger" style={{ width: '80px' }} onChange={(e) => actualizarCampo(dia, i, 'descansoSegundos', parseInt(e.target.value))} />
-                      </div>
-                      <div className="col-md-2 text-end">
-                        <button className="btn btn-outline-danger" onClick={() => eliminarEjercicio(dia, i)}>❌</button>
-                      </div>
-                      <div className="col-12 mt-2">
-                        <label>Notas</label>
-                        <textarea className="form-control bg-dark text-white border-danger" rows="2" placeholder="Notas..." value={ej.notas} onChange={(e) => actualizarCampo(dia, i, 'notas', e.target.value)} />
-                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            );
-          })}
+                  ))}
+                </div>
+              );
+            })}
 
-          <button className="btn btn-success btn-lg w-100 mt-4" onClick={guardarCambios}>💾 Guardar cambios</button>
+            <button className="btn btn-success btn-lg w-100 mt-4" onClick={guardarCambios} style={{ borderRadius: '12px' }}>
+              <FontAwesomeIcon icon={faFloppyDisk} /> Guardar cambios
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api/axios';
 import NavBar from '../components/NavBar';
+import PageHeader from '../components/PageHeader';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPenToSquare, faFileLines, faLightbulb, faCamera, faVideo } from '@fortawesome/free-solid-svg-icons';
 
 export default function ExerciseEditPage() {
   const { id } = useParams();
@@ -174,36 +177,43 @@ export default function ExerciseEditPage() {
   };
 
   return (
-    <div className="container-xl mt-5 pt-4">
+    <div className="page-container" style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #0a0a0f 0%, #111118 50%, #0a0a0f 100%)', paddingTop: '100px' }}>
       <NavBar />
-      <div className="card shadow-sm">
-        <div className="card-header">
-          <h5 className="mb-0">✏️ Editar ejercicio</h5>
-        </div>
-
-        <div className="card-body">
-          {/* === campos de texto y select === */}
-          <div className="mb-3">
-            <input className="form-control" placeholder="Nombre" name="nombre" value={form.nombre} onChange={handleChange}/>
+      <div className="page-content" style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px' }}>
+        <PageHeader 
+          icon={faPenToSquare} 
+          title="Editar Ejercicio" 
+          subtitle="Modifica los detalles del ejercicio"
+        />
+        
+        <div className="card shadow-sm" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+          <div className="card-header bg-dark text-white" style={{ padding: '20px 24px' }}>
+            <h5 className="mb-0"><FontAwesomeIcon icon={faPenToSquare} /> Editar ejercicio</h5>
           </div>
 
-          <div className="mb-3">
-            <input className="form-control" placeholder="Descripción corta" name="descripcionCorta" value={form.descripcionCorta} onChange={handleChange}/>
-          </div>
-
-          <div className="mb-3">
-            <textarea className="form-control" placeholder="Descripción completa" name="descripcion" rows="3" value={form.descripcion} onChange={handleChange}/>
-          </div>
-
-          <div className="row g-2 mb-3">
-            <div className="col-md-4">
-              <label className="form-label small">Zona corporal</label>
-              <select className="form-select" name="zonaCorporal" value={form.zonaCorporal} onChange={handleChange}>
-                {zonas.map((z) => (
-                  <option key={z.value} value={z.value}>{z.label}</option>
-                ))}
-              </select>
+          <div className="card-body" style={{ padding: '24px' }}>
+            {/* === campos de texto y select === */}
+            <div className="mb-3">
+              <input className="form-control" placeholder="Nombre" name="nombre" value={form.nombre} onChange={handleChange}/>
             </div>
+
+            <div className="mb-3">
+              <input className="form-control" placeholder="Descripción corta" name="descripcionCorta" value={form.descripcionCorta} onChange={handleChange}/>
+            </div>
+
+            <div className="mb-3">
+              <textarea className="form-control" placeholder="Descripción completa" name="descripcion" rows="3" value={form.descripcion} onChange={handleChange}/>
+            </div>
+
+            <div className="row g-2 mb-3">
+              <div className="col-md-4">
+                <label className="form-label small">Zona corporal</label>
+                <select className="form-select" name="zonaCorporal" value={form.zonaCorporal} onChange={handleChange}>
+                  {zonas.map((z) => (
+                    <option key={z.value} value={z.value}>{z.label}</option>
+                  ))}
+                </select>
+              </div>
 
             <div className="col-md-4">
               <label className="form-label small">Grupo muscular</label>
@@ -264,18 +274,18 @@ export default function ExerciseEditPage() {
           </div>
 
           <div className="mb-3">
-            <label className="form-label">📝 Instrucciones</label>
+            <label className="form-label"><FontAwesomeIcon icon={faFileLines} /> Instrucciones</label>
             <textarea className="form-control" placeholder="Pasos para ejecutar correctamente el ejercicio" rows={5} name="instrucciones" value={form.instrucciones} onChange={handleChange}/>
           </div>
 
           <div className="mb-4">
-            <label className="form-label">💡 Consejos</label>
+            <label className="form-label"><FontAwesomeIcon icon={faLightbulb} /> Consejos</label>
             <textarea className="form-control" placeholder="Recomendaciones, advertencias o errores comunes" rows={3} name="consejos" value={form.consejos} onChange={handleChange}/>
           </div>
 
           {/* === IMAGEN === */}
           <div className="mb-4">
-            <label className="form-label d-block">📷 Imagen actual / nueva</label>
+            <label className="form-label d-block"><FontAwesomeIcon icon={faCamera} /> Imagen actual / nueva</label>
             <div className="row g-2 align-items-center">
               <div className="col-md-6">
                 {imagenPreview ? (
@@ -295,7 +305,7 @@ export default function ExerciseEditPage() {
 
           {/* === VIDEO === */}
           <div className="mb-4">
-            <label className="form-label d-block">🎬 Vídeo actual / nuevo</label>
+            <label className="form-label d-block"><FontAwesomeIcon icon={faVideo} /> Vídeo actual / nuevo</label>
             <div className="row g-2 align-items-center">
               <div className="col-md-6">
                 {videoPreview ? (
@@ -319,10 +329,11 @@ export default function ExerciseEditPage() {
 
           {/* === BOTONES === */}
           <div className="d-flex gap-2">
-            <button className="btn btn-success" onClick={guardar}>Guardar cambios</button>
-            <button className="btn btn-secondary" onClick={() => navigate('/ejercicios')}>Cancelar</button>
+            <button className="btn btn-success" onClick={guardar} style={{ borderRadius: '12px', padding: '12px 24px' }}>Guardar cambios</button>
+            <button className="btn btn-secondary" onClick={() => navigate('/ejercicios')} style={{ borderRadius: '12px', padding: '12px 24px' }}>Cancelar</button>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

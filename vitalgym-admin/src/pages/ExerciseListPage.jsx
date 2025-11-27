@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import NavBar from '../components/NavBar';
+import PageHeader from '../components/PageHeader';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPenToSquare, faTrashCan, faPlus, faRotate } from '@fortawesome/free-solid-svg-icons';
+import { faPenToSquare, faTrashCan, faPlus, faRotate, faDumbbell } from '@fortawesome/free-solid-svg-icons';
 
 export default function ExerciseListPage() {
   const [ejercicios, setEjercicios] = useState([]);
@@ -131,132 +132,138 @@ export default function ExerciseListPage() {
   }, [zonaFilter]);
 
   return (
-    <div className="container-xl mt-4" style={{ paddingTop: '80px' }}>
+    <div className="page-container" style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #0a0a0f 0%, #111118 50%, #0a0a0f 100%)', paddingTop: '100px' }}>
       <NavBar />
-      <h2 className="text-white mt-4 mb-3">🏋️ Ejercicios base</h2>
+      <div className="page-content" style={{ maxWidth: '1400px', margin: '0 auto', padding: '24px' }}>
+        <PageHeader 
+          icon={faDumbbell} 
+          title="Base de Ejercicios" 
+          subtitle="Gestiona la biblioteca de ejercicios con vídeos e imágenes"
+        />
 
-      <div className="mb-4 d-flex justify-content-between align-items-center">
-        <div className="d-flex gap-2 flex-wrap">
-          <Link to="/ejercicios/crear" className="btn btn-success">
-            <FontAwesomeIcon icon={faPlus} /> Crear ejercicio
-          </Link>
+        <div className="mb-4 d-flex justify-content-between align-items-center">
+          <div className="d-flex gap-2 flex-wrap">
+            <Link to="/ejercicios/crear" className="btn btn-success" style={{ padding: '12px 20px', borderRadius: '12px', fontWeight: '700' }}>
+              <FontAwesomeIcon icon={faPlus} /> Crear ejercicio
+            </Link>
 
-          <button className="btn btn-outline-light" onClick={fetchEjercicios} title="Refrescar">
-            <FontAwesomeIcon icon={faRotate} /> Refrescar
-          </button>
+            <button className="btn btn-outline-light" onClick={fetchEjercicios} title="Refrescar" style={{ borderRadius: '12px' }}>
+              <FontAwesomeIcon icon={faRotate} /> Refrescar
+            </button>
 
-          <button className="btn btn-sm btn-secondary" onClick={resetFilters} title="Borrar filtros">
-            Borrar filtros
-          </button>
+            <button className="btn btn-sm btn-secondary" onClick={resetFilters} title="Borrar filtros" style={{ borderRadius: '12px' }}>
+              Borrar filtros
+            </button>
+          </div>
+
+          <div className="text-white">Mostrando {filtered.length} / {ejercicios.length}</div>
         </div>
 
-        <div className="text-white">Mostrando {filtered.length} / {ejercicios.length}</div>
-      </div>
+        {/* FILTROS */}
+        <div className="card mb-4 p-3" style={{ backgroundColor: '#0b0b0b', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px' }}>
+          <div className="row g-2 align-items-center">
+            <div className="col-md-3">
+              <label className="form-label text-muted small">Zona corporal</label>
+              <select className="form-select" value={zonaFilter} onChange={(e) => setZonaFilter(e.target.value)}>
+                {zonas.map(z => <option key={z.value} value={z.value}>{z.label}</option>)}
+              </select>
+            </div>
 
-      {/* FILTROS */}
-      <div className="card mb-4 p-3" style={{ backgroundColor: '#0b0b0b', border: '1px solid rgba(255,255,255,0.05)' }}>
-        <div className="row g-2 align-items-center">
-          <div className="col-md-3">
-            <label className="form-label text-muted small">Zona corporal</label>
-            <select className="form-select" value={zonaFilter} onChange={(e) => setZonaFilter(e.target.value)}>
-              {zonas.map(z => <option key={z.value} value={z.value}>{z.label}</option>)}
-            </select>
-          </div>
+            <div className="col-md-3">
+              <label className="form-label text-muted small">Grupo muscular</label>
+              <select
+                className="form-select"
+                value={grupoFilter}
+                onChange={(e) => setGrupoFilter(e.target.value)}
+                disabled={!zonaFilter}
+              >
+                <option value="">{zonaFilter ? 'Todos los grupos' : 'Selecciona zona primero'}</option>
+                {zonaFilter && (gruposByZona[zonaFilter] || []).map(g => (
+                  <option key={g} value={g}>{g}</option>
+                ))}
+                <option value="otro">Otro</option>
+              </select>
+            </div>
 
-          <div className="col-md-3">
-            <label className="form-label text-muted small">Grupo muscular</label>
-            <select
-              className="form-select"
-              value={grupoFilter}
-              onChange={(e) => setGrupoFilter(e.target.value)}
-              disabled={!zonaFilter}
-            >
-              <option value="">{zonaFilter ? 'Todos los grupos' : 'Selecciona zona primero'}</option>
-              {zonaFilter && (gruposByZona[zonaFilter] || []).map(g => (
-                <option key={g} value={g}>{g}</option>
-              ))}
-              <option value="otro">Otro</option>
-            </select>
-          </div>
+            <div className="col-md-2">
+              <label className="form-label text-muted small">Equipo</label>
+              <select className="form-select" value={equipoFilter} onChange={(e) => setEquipoFilter(e.target.value)}>
+                {equipos.map(eq => <option key={eq.value} value={eq.value}>{eq.label}</option>)}
+              </select>
+            </div>
 
-          <div className="col-md-2">
-            <label className="form-label text-muted small">Equipo</label>
-            <select className="form-select" value={equipoFilter} onChange={(e) => setEquipoFilter(e.target.value)}>
-              {equipos.map(eq => <option key={eq.value} value={eq.value}>{eq.label}</option>)}
-            </select>
-          </div>
+            <div className="col-md-2">
+              <label className="form-label text-muted small">Nivel</label>
+              <select className="form-select" value={nivelFilter} onChange={(e) => setNivelFilter(e.target.value)}>
+                {niveles.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
+              </select>
+            </div>
 
-          <div className="col-md-2">
-            <label className="form-label text-muted small">Nivel</label>
-            <select className="form-select" value={nivelFilter} onChange={(e) => setNivelFilter(e.target.value)}>
-              {niveles.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
-            </select>
-          </div>
-
-          <div className="col-md-2">
-            <label className="form-label text-muted small">Buscar</label>
-            <input
-              className="form-control"
-              placeholder="Nombre o descripción..."
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
+            <div className="col-md-2">
+              <label className="form-label text-muted small">Buscar</label>
+              <input
+                className="form-control"
+                placeholder="Nombre o descripción..."
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      {loading ? (
-        <p className="text-white">Cargando ejercicios...</p>
-      ) : filtered.length === 0 ? (
-        <p className="text-white">No hay ejercicios que coincidan con los filtros.</p>
-      ) : (
-        <div className="row">
-          {filtered.map((ej) => {
-            const zona = getField(ej, 'zonaCorporal', 'zona_corporal');
-            const grupo = getField(ej, 'grupoMuscular', 'grupo_muscular');
-            const equipo = getField(ej, 'equipo', 'equipo');
-            const nivel = getField(ej, 'nivel', 'nivel');
+        {loading ? (
+          <p className="text-white">Cargando ejercicios...</p>
+        ) : filtered.length === 0 ? (
+          <p className="text-white">No hay ejercicios que coincidan con los filtros.</p>
+        ) : (
+          <div className="row">
+            {filtered.map((ej) => {
+              const zona = getField(ej, 'zonaCorporal', 'zona_corporal');
+              const grupo = getField(ej, 'grupoMuscular', 'grupo_muscular');
+              const equipo = getField(ej, 'equipo', 'equipo');
+              const nivel = getField(ej, 'nivel', 'nivel');
 
-            return (
-              <div className="col-md-6 col-lg-4 mb-4" key={ej.id}>
-                <div className="card h-100 shadow-sm border-0" style={{ backgroundColor: '#111', color: 'white', borderRadius: '10px', border: '1px solid crimson' }}>
-                  {ej.imagenUrl && (
-                    <img
-                      src={ej.imagenUrl}
-                      className="card-img-top"
-                      alt={ej.nombre}
-                      style={{ objectFit: 'cover', height: '200px', borderTopLeftRadius: '10px', borderTopRightRadius: '10px' }}
-                    />
-                  )}
-                  <div className="card-body">
-                    <h5 className="card-title">{ej.nombre}</h5>
-                    <p className="card-text">{ej.descripcion}</p>
+              return (
+                <div className="col-md-6 col-lg-4 mb-4" key={ej.id}>
+                  <div className="card h-100 shadow-sm border-0" style={{ backgroundColor: '#111', color: 'white', borderRadius: '10px', border: '1px solid crimson' }}>
+                    {ej.imagenUrl && (
+                      <img
+                        src={ej.imagenUrl}
+                        className="card-img-top"
+                        alt={ej.nombre}
+                        style={{ objectFit: 'cover', height: '200px', borderTopLeftRadius: '10px', borderTopRightRadius: '10px' }}
+                      />
+                    )}
+                    <div className="card-body">
+                      <h5 className="card-title">{ej.nombre}</h5>
+                      <p className="card-text">{ej.descripcion}</p>
 
-                    <div className="d-flex flex-wrap gap-1">
-                      {zona && <span className="badge bg-primary">{zona}</span>}
-                      {grupo && <span className="badge bg-info text-dark">{grupo}</span>}
-                      {equipo && <span className="badge bg-warning text-dark">{typeof equipo === 'string' ? equipo : equipo}</span>}
-                      {nivel && <span className="badge bg-success text-dark">{nivel}</span>}
+                      <div className="d-flex flex-wrap gap-1">
+                        {zona && <span className="badge bg-primary">{zona}</span>}
+                        {grupo && <span className="badge bg-info text-dark">{grupo}</span>}
+                        {equipo && <span className="badge bg-warning text-dark">{typeof equipo === 'string' ? equipo : equipo}</span>}
+                        {nivel && <span className="badge bg-success text-dark">{nivel}</span>}
+                      </div>
+                    </div>
+                    <div className="card-footer bg-black d-flex justify-content-between border-top-0">
+                      <Link to={`/ejercicios/${ej.id}/editar`} className="btn btn-sm btn-primary">
+                        <FontAwesomeIcon icon={faPenToSquare} /> Editar
+                      </Link>
+                      <button
+                        className="btn btn-sm btn-danger"
+                        onClick={() => eliminarEjercicio(ej.id)}
+                        title="Eliminar ejercicio"
+                      >
+                        <FontAwesomeIcon icon={faTrashCan} /> Eliminar
+                      </button>
                     </div>
                   </div>
-                  <div className="card-footer bg-black d-flex justify-content-between border-top-0">
-                    <Link to={`/ejercicios/${ej.id}/editar`} className="btn btn-sm btn-primary">
-                      <FontAwesomeIcon icon={faPenToSquare} /> Editar
-                    </Link>
-                    <button
-                      className="btn btn-sm btn-danger"
-                      onClick={() => eliminarEjercicio(ej.id)}
-                      title="Eliminar ejercicio"
-                    >
-                      <FontAwesomeIcon icon={faTrashCan} /> Eliminar
-                    </button>
-                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

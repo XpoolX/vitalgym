@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import NavBar from '../components/NavBar';
+import PageHeader from '../components/PageHeader';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faDumbbell, faFileLines, faLightbulb, faCamera, faVideo } from '@fortawesome/free-solid-svg-icons';
 
 export default function ExerciseFormPage() {
   const [nombre, setNombre] = useState('');
@@ -104,37 +107,44 @@ export default function ExerciseFormPage() {
   };
 
   return (
-    <div className="container-xl mt-5 pt-4">
+    <div className="page-container" style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #0a0a0f 0%, #111118 50%, #0a0a0f 100%)', paddingTop: '100px' }}>
       <NavBar />
-      <div className="card shadow-sm">
-        <div className="card-header bg-light">
-          <h5 className="mb-0">📋 Crear nuevo ejercicio</h5>
-        </div>
-
-        <div className="card-body">
-          <div className="mb-3">
-            <input
-              className="form-control"
-              placeholder="Nombre del ejercicio"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-            />
+      <div className="page-content" style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px' }}>
+        <PageHeader 
+          icon={faDumbbell} 
+          title="Crear Nuevo Ejercicio" 
+          subtitle="Añade un nuevo ejercicio a la biblioteca"
+        />
+        
+        <div className="card shadow-sm" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+          <div className="card-header bg-dark text-white" style={{ padding: '20px 24px' }}>
+            <h5 className="mb-0"><FontAwesomeIcon icon={faDumbbell} /> Crear nuevo ejercicio</h5>
           </div>
 
-          <div className="mb-3">
-            <input
-              className="form-control"
-              placeholder="Descripción corta (resumen)"
-              value={descripcionCorta}
-              onChange={(e) => setDescripcionCorta(e.target.value)}
-            />
-          </div>
+          <div className="card-body" style={{ padding: '24px' }}>
+            <div className="mb-3">
+              <input
+                className="form-control"
+                placeholder="Nombre del ejercicio"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+              />
+            </div>
 
-          <div className="mb-3">
-            <textarea
-              className="form-control"
-              placeholder="Descripción completa"
-              value={descripcion}
+            <div className="mb-3">
+              <input
+                className="form-control"
+                placeholder="Descripción corta (resumen)"
+                value={descripcionCorta}
+                onChange={(e) => setDescripcionCorta(e.target.value)}
+              />
+            </div>
+
+            <div className="mb-3">
+              <textarea
+                className="form-control"
+                placeholder="Descripción completa"
+                value={descripcion}
               onChange={(e) => setDescripcion(e.target.value)}
             />
           </div>
@@ -205,7 +215,7 @@ export default function ExerciseFormPage() {
           </div>
 
           <div className="mb-3">
-            <label className="form-label">📝 Instrucciones</label>
+            <label className="form-label"><FontAwesomeIcon icon={faFileLines} /> Instrucciones</label>
             <textarea
               className="form-control"
               placeholder="Pasos para ejecutar correctamente el ejercicio"
@@ -216,7 +226,7 @@ export default function ExerciseFormPage() {
           </div>
 
           <div className="mb-4">
-            <label className="form-label">💡 Consejos</label>
+            <label className="form-label"><FontAwesomeIcon icon={faLightbulb} /> Consejos</label>
             <textarea
               className="form-control"
               placeholder="Recomendaciones, advertencias o errores comunes"
@@ -227,7 +237,7 @@ export default function ExerciseFormPage() {
           </div>
 
           <div className="mb-3">
-            <label className="form-label">📷 Imagen (archivo)</label>
+            <label className="form-label"><FontAwesomeIcon icon={faCamera} /> Imagen (archivo)</label>
             <input
               type="file"
               className="form-control"
@@ -237,7 +247,7 @@ export default function ExerciseFormPage() {
           </div>
 
           <div className="mb-4">
-            <label className="form-label">🎬 Vídeo (archivo)</label>
+            <label className="form-label"><FontAwesomeIcon icon={faVideo} /> Vídeo (archivo)</label>
             <input
               type="file"
               className="form-control"
@@ -246,10 +256,11 @@ export default function ExerciseFormPage() {
             />
           </div>
 
-          <button className="btn btn-success" onClick={guardar}>
+          <button className="btn btn-success" onClick={guardar} style={{ borderRadius: '12px', padding: '12px 24px' }}>
             Guardar ejercicio
           </button>
         </div>
+      </div>
       </div>
     </div>
   );
