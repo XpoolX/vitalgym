@@ -4,7 +4,7 @@
 /* New page container styles */
 .users-page-container {
   min-height: 100vh;
-  background: linear-gradient(180deg, #000 0%, #000 60%, #e21f45 60%);
+  background: linear-gradient(135deg, black 50%, crimson 50%);
   padding-top: 150px;
 }
 
@@ -32,7 +32,7 @@
 
 .table-page-wrap {
   min-height: 100vh;
-  background: linear-gradient(180deg,#000 0%, #000 60%, #e21f45 60%);
+  background: linear-gradient(135deg, black 50%, crimson 50%);
   color: #fff;
   font-family: "Montserrat", "Arial", sans-serif;
 }

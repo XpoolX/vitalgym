@@ -30,7 +30,7 @@ export default function RoutineListPage() {
   };
 
   return (
-    <div className="page-container" style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #000 0%, #000 60%, #e21f45 60%)', paddingTop: '150px' }}>
+    <div className="page-container" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, black 50%, crimson 50%)', paddingTop: '150px' }}>
       <NavBar />
       <div className="page-content" style={{ maxWidth: '1400px', margin: '0 auto', padding: '24px' }}>
         <PageHeader 
