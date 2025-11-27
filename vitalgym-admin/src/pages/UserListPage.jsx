@@ -459,6 +459,7 @@ export default function UserListPage() {
                 }
               >
                 <option value="">Forma de pago</option>
+                <option value="domiciliado">Domiciliado</option>
                 <option value="efectivo">Efectivo</option>
                 <option value="tarjeta">Tarjeta</option>
               </select>
@@ -836,6 +837,7 @@ export default function UserListPage() {
                                         }
                                       >
                                         <option value="">Seleccionar...</option>
+                                        <option value="domiciliado">Domiciliado</option>
                                         <option value="efectivo">Efectivo</option>
                                         <option value="tarjeta">Tarjeta</option>
                                       </select>
@@ -859,7 +861,8 @@ export default function UserListPage() {
                                     <div className="info-item">
                                       <span className="info-label">Forma de pago:</span>
                                       <span className="info-value">
-                                        {u.formaPago === 'efectivo' ? '💵 Efectivo' : 
+                                        {u.formaPago === 'domiciliado' ? '🏦 Domiciliado' :
+                                         u.formaPago === 'efectivo' ? '💵 Efectivo' : 
                                          u.formaPago === 'tarjeta' ? '💳 Tarjeta' : '—'}
                                       </span>
                                     </div>

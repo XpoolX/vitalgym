@@ -19,8 +19,8 @@ module.exports = (sequelize, DataTypes) => {
     puerta: DataTypes.STRING,
     poblacion: DataTypes.STRING,
     // Campos de pago
-    formaPago: DataTypes.ENUM('efectivo', 'tarjeta'),
-    diaPago: { type: DataTypes.INTEGER, validate: { min: 1, max: 31 } },
+    formaPago: { type: DataTypes.ENUM('domiciliado', 'efectivo', 'tarjeta'), defaultValue: 'domiciliado' },
+    diaPago: { type: DataTypes.INTEGER, allowNull: true, validate: { min: 1, max: 31 } },
     // Campos de seguimiento
     ultimaApertura: DataTypes.DATE,
     fechaNacimiento: DataTypes.DATE,

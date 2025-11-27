@@ -105,6 +105,18 @@ exports.updateUser = async (req, res) => {
       datos.imagenUrl = `/uploads/${req.file.filename}`;
     }
 
+    // Limpiar campos numéricos vacíos para evitar errores de SQL
+    if (datos.diaPago === '' || datos.diaPago === undefined) {
+      datos.diaPago = null;
+    } else if (datos.diaPago) {
+      datos.diaPago = parseInt(datos.diaPago, 10);
+    }
+
+    // Limpiar formaPago si está vacío
+    if (datos.formaPago === '' || datos.formaPago === undefined) {
+      datos.formaPago = null;
+    }
+
     await User.update(datos, { where: { id } });
     res.json({ message: 'Usuario actualizado' });
   } catch (error) {
