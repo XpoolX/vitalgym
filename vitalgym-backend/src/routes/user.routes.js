@@ -27,6 +27,9 @@ router.patch('/:id/toggle-status', adminOnly, controller.toggleStatus);
 // PATCH para que el admin cambie la contraseña de cualquier usuario
 router.patch('/:id/password', adminOnly, controller.changePassword);
 
+// GET para obtener estadísticas de un usuario
+router.get('/:id/stats', adminOnly, controller.getUserStats);
+
 // Ruta para que el usuario autenticado cambie SU propia contraseña (no requiere admin)
 router.patch('/me/password', controller.changeOwnPassword);
 

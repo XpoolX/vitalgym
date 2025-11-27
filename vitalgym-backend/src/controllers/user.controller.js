@@ -17,7 +17,11 @@ exports.getAllUsers = async (req, res) => {
 // Ahora acepta el campo "username" (nombre de usuario) además de los anteriores
 exports.createUser = async (req, res) => {
   try {
-    const { nombre, username, email, password, rol, idLlave, direccion, telefono } = req.body;
+    const { 
+      nombre, username, email, password, rol, idLlave, direccion, telefono,
+      calle, codigoPostal, piso, puerta, poblacion, formaPago, diaPago,
+      fechaNacimiento, observaciones
+    } = req.body;
 
     // Validaciones básicas
     if (!username || !email || !password) {
@@ -54,7 +58,16 @@ exports.createUser = async (req, res) => {
       imagenUrl,
       idLlave,
       direccion,
-      telefono
+      telefono,
+      calle,
+      codigoPostal,
+      piso,
+      puerta,
+      poblacion,
+      formaPago,
+      diaPago: diaPago ? parseInt(diaPago, 10) : null,
+      fechaNacimiento: fechaNacimiento || null,
+      observaciones
     });
 
     res.status(201).json({ message: 'Usuario creado', id: nuevo.id });
@@ -190,5 +203,88 @@ exports.changeOwnPassword = async (req, res) => {
   } catch (error) {
     console.error('Error cambiando propia contraseña:', error);
     res.status(500).json({ message: 'Error al cambiar la contraseña', error: error.message });
+  }
+};
+
+// Obtener estadísticas de un usuario (sesiones, entrenamientos, etc.)
+exports.getUserStats = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const Session = db.Session;
+    const { Op } = db.Sequelize;
+
+    const user = await User.findByPk(id, { attributes: { exclude: ['password'] } });
+    if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+
+    // Obtener todas las sesiones del usuario
+    const sessions = await Session.findAll({
+      where: { userId: id, completado: true },
+      order: [['fecha', 'DESC']],
+      attributes: ['id', 'fecha', 'diaRutina', 'completado']
+    });
+
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+
+    // Calcular estadísticas
+    const sessionsLastWeek = sessions.filter(s => new Date(s.fecha) >= oneWeekAgo);
+    const sessionsLastMonth = sessions.filter(s => new Date(s.fecha) >= oneMonthAgo);
+    const sessionsLastYear = sessions.filter(s => new Date(s.fecha) >= oneYearAgo);
+
+    // Obtener la última sesión
+    const ultimaSesion = sessions.length > 0 ? sessions[0].fecha : null;
+
+    // Calcular medias
+    const entrenosPorSemana = sessionsLastMonth.length / 4; // promedio semanal del último mes
+    const entrenosPorMes = sessionsLastYear.length / 12; // promedio mensual del último año
+
+    // Calcular racha actual de días consecutivos
+    let rachaActual = 0;
+    if (sessions.length > 0) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // Agrupar por día
+      const diasEntrenados = new Set();
+      sessions.forEach(s => {
+        const fecha = new Date(s.fecha);
+        fecha.setHours(0, 0, 0, 0);
+        diasEntrenados.add(fecha.getTime());
+      });
+      
+      // Contar racha desde hoy o ayer
+      let checkDate = new Date(today);
+      // Si hoy no entrenó, empezar desde ayer
+      if (!diasEntrenados.has(checkDate.getTime())) {
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
+      
+      while (diasEntrenados.has(checkDate.getTime())) {
+        rachaActual++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
+    }
+
+    // Calcular total de horas entrenadas (estimando 1 hora por sesión)
+    const totalHorasEntrenadas = sessions.length; // aproximado
+
+    res.json({
+      ultimaSesion,
+      ultimaApertura: user.ultimaApertura,
+      entrenosSemana: sessionsLastWeek.length,
+      entrenosMes: sessionsLastMonth.length,
+      entrenosAnio: sessionsLastYear.length,
+      promedioSemanal: Math.round(entrenosPorSemana * 10) / 10,
+      promedioMensual: Math.round(entrenosPorMes * 10) / 10,
+      totalEntrenos: sessions.length,
+      rachaActual,
+      totalHorasEntrenadas,
+      fechaRegistro: user.createdAt
+    });
+  } catch (error) {
+    console.error('Error al obtener estadísticas del usuario:', error);
+    res.status(500).json({ message: 'Error al obtener estadísticas', error: error.message });
   }
 };
