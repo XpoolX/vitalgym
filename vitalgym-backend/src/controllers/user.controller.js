@@ -211,7 +211,10 @@ exports.getUserStats = async (req, res) => {
   try {
     const { id } = req.params;
     const Session = db.Session;
-    const { Op } = db.Sequelize;
+
+    // Constantes para cálculo de promedios
+    const WEEKS_IN_MONTH = 4;
+    const MONTHS_IN_YEAR = 12;
 
     const user = await User.findByPk(id, { attributes: { exclude: ['password'] } });
     if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
@@ -237,8 +240,8 @@ exports.getUserStats = async (req, res) => {
     const ultimaSesion = sessions.length > 0 ? sessions[0].fecha : null;
 
     // Calcular medias
-    const entrenosPorSemana = sessionsLastMonth.length / 4; // promedio semanal del último mes
-    const entrenosPorMes = sessionsLastYear.length / 12; // promedio mensual del último año
+    const entrenosPorSemana = sessionsLastMonth.length / WEEKS_IN_MONTH;
+    const entrenosPorMes = sessionsLastYear.length / MONTHS_IN_YEAR;
 
     // Calcular racha actual de días consecutivos
     let rachaActual = 0;
@@ -267,8 +270,8 @@ exports.getUserStats = async (req, res) => {
       }
     }
 
-    // Calcular total de horas entrenadas (estimando 1 hora por sesión)
-    const totalHorasEntrenadas = sessions.length; // aproximado
+    // Total de sesiones completadas
+    const totalSesionesCompletadas = sessions.length;
 
     res.json({
       ultimaSesion,
@@ -278,9 +281,8 @@ exports.getUserStats = async (req, res) => {
       entrenosAnio: sessionsLastYear.length,
       promedioSemanal: Math.round(entrenosPorSemana * 10) / 10,
       promedioMensual: Math.round(entrenosPorMes * 10) / 10,
-      totalEntrenos: sessions.length,
+      totalEntrenos: totalSesionesCompletadas,
       rachaActual,
-      totalHorasEntrenadas,
       fechaRegistro: user.createdAt
     });
   } catch (error) {

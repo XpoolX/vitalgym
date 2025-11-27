@@ -246,6 +246,7 @@ export default function UserListPage() {
         (u.email && u.email.toLowerCase().includes(q)) ||
         (u.username && u.username.toLowerCase().includes(q)) ||
         (u.poblacion && u.poblacion.toLowerCase().includes(q)) ||
+        (u.calle && u.calle.toLowerCase().includes(q)) ||
         (u.telefono && u.telefono.toLowerCase().includes(q)) ||
         (u.idLlave && u.idLlave.toString().toLowerCase().includes(q))
     );
@@ -302,7 +303,7 @@ export default function UserListPage() {
           <div className="center-controls">
             <input
               className="search-input"
-              placeholder="Buscar por nombre, email, ID llave, población, teléfono o usuario"
+              placeholder="Buscar por nombre, email, usuario, población, calle, teléfono o Nº llave"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               aria-label="Buscar usuarios"
