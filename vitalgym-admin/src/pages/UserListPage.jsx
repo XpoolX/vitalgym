@@ -26,7 +26,7 @@ import {
   faCalendarWeek,
   faCalendarDays,
   faCalendarAlt,
-  faTrendUp,
+  faArrowTrendUp,
   faFire,
   faDumbbell,
   faFileLines,
@@ -978,7 +978,7 @@ export default function UserListPage() {
                                       </div>
                                     </div>
                                     <div className="stat-card">
-                                      <div className="stat-icon"><FontAwesomeIcon icon={faTrendUp} /></div>
+                                      <div className="stat-icon"><FontAwesomeIcon icon={faArrowTrendUp} /></div>
                                       <div className="stat-info">
                                         <span className="stat-label">Promedio semanal</span>
                                         <span className="stat-value">{stats.promedioSemanal} / semana</span>
