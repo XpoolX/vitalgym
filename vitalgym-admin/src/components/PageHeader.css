@@ -1,7 +1,7 @@
 /* ========== SIMPLE PAGE HEADER - Fixed, full width, attached to navbar ========== */
 .page-header-simple {
   position: fixed;
-  top: 100px; /* Right below the navbar */
+  top: 90px; /* Right below the navbar */
   left: 0;
   right: 0;
   width: 100%;
