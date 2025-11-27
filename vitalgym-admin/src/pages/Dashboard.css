@@ -19,16 +19,19 @@
   margin-bottom: 40px;
 }
 
+.dashboard-content .stat-card,
 .stat-card {
-  background: linear-gradient(145deg, #1a1a2e, #16213e);
+  background: #1a1a2e !important;
+  background-color: #1a1a2e !important;
   border-radius: 16px;
   padding: 24px;
   display: flex;
   align-items: center;
   gap: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  --bs-card-bg: #1a1a2e;
 }
 
 .stat-card:hover {
@@ -87,13 +90,13 @@
 .stat-number {
   font-size: 32px;
   font-weight: 800;
-  color: #fff;
+  color: #fff !important;
   line-height: 1;
 }
 
 .stat-label {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.6) !important;
   font-weight: 500;
 }
 
@@ -122,15 +125,18 @@
   gap: 20px;
 }
 
+.dashboard-content .activity-card,
 .activity-card {
-  background: linear-gradient(145deg, #1e1e2d, #252538);
+  background: #1e1e2d !important;
+  background-color: #1e1e2d !important;
   border-radius: 16px;
   padding: 24px;
   display: flex;
   align-items: center;
   gap: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
   transition: transform 0.3s ease;
+  --bs-card-bg: #1e1e2d;
 }
 
 .activity-card:hover {
@@ -192,18 +198,21 @@
   gap: 20px;
 }
 
+.dashboard-content .action-card,
 .action-card {
-  background: linear-gradient(145deg, #1e1e2d, #252538);
+  background: #1e1e2d !important;
+  background-color: #1e1e2d !important;
   border-radius: 16px;
   padding: 24px;
   display: flex;
   align-items: center;
   gap: 20px;
   text-decoration: none;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  --bs-card-bg: #1e1e2d;
 }
 
 .action-card::before {
@@ -281,14 +290,17 @@
   margin-bottom: 40px;
 }
 
+.dashboard-content .coming-soon-card,
 .coming-soon-card {
-  background: linear-gradient(145deg, rgba(220, 20, 60, 0.1), rgba(220, 20, 60, 0.05));
-  border: 1px solid rgba(220, 20, 60, 0.2);
+  background: rgba(220, 20, 60, 0.1) !important;
+  background-color: rgba(220, 20, 60, 0.1) !important;
+  border: 1px solid rgba(220, 20, 60, 0.2) !important;
   border-radius: 16px;
   padding: 28px 32px;
   display: flex;
   align-items: center;
   gap: 24px;
+  --bs-card-bg: transparent;
 }
 
 .coming-soon-icon {
