@@ -11,7 +11,20 @@ module.exports = (sequelize, DataTypes) => {
     idLlave: DataTypes.STRING,
     direccion: DataTypes.STRING,
     telefono: DataTypes.STRING,
-    currentTrainingDay: { type: DataTypes.INTEGER, defaultValue: 1 }
+    currentTrainingDay: { type: DataTypes.INTEGER, defaultValue: 1 },
+    // Campos de dirección detallada
+    calle: DataTypes.STRING,
+    codigoPostal: DataTypes.STRING,
+    piso: DataTypes.STRING,
+    puerta: DataTypes.STRING,
+    poblacion: DataTypes.STRING,
+    // Campos de pago
+    formaPago: { type: DataTypes.ENUM('domiciliado', 'efectivo', 'tarjeta'), defaultValue: 'domiciliado' },
+    diaPago: { type: DataTypes.INTEGER, allowNull: true, validate: { min: 1, max: 31 } },
+    // Campos de seguimiento
+    ultimaApertura: DataTypes.DATE,
+    fechaNacimiento: DataTypes.DATE,
+    observaciones: DataTypes.TEXT
   }, {
     tableName: 'Users',
     timestamps: true

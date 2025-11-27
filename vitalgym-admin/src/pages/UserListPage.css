@@ -272,3 +272,263 @@
 
 /* Make sure header spacing consistent with page */
 .table-header + .table-container { margin-top: 12px; }
+
+/* ========== EXPANDABLE USER DETAILS ========== */
+
+/* Name cell with expand icon */
+.name-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.expand-icon {
+  color: #fff;
+  font-size: 16px;
+  transition: transform 0.2s ease;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.row-expanded .expand-icon {
+  color: #fff;
+  background: #1f9b5a;
+}
+
+/* Expanded row styling */
+.row-expanded td {
+  border-bottom: none !important;
+}
+
+/* User details row */
+.user-details-row td {
+  padding: 0 !important;
+  background: linear-gradient(180deg, #2a1a1e 0%, #1a1215 100%) !important;
+  border-bottom: 3px solid rgba(226, 31, 69, 0.4) !important;
+}
+
+.user-details-panel {
+  padding: 20px 24px;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.details-section {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.details-section.stats-section {
+  grid-column: 1 / -1;
+}
+
+.section-title {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e21f45;
+}
+
+.details-content {
+  padding: 4px 0;
+}
+
+/* Info list for view mode */
+.info-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.info-item {
+  display: flex;
+  gap: 6px;
+  min-width: 120px;
+}
+
+.info-item.full-width {
+  width: 100%;
+}
+
+.info-label {
+  font-weight: 700;
+  color: #666;
+  font-size: 13px;
+}
+
+.info-value {
+  color: #333;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* Edit grid for edit mode */
+.edit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.edit-field.full-width {
+  grid-column: 1 / -1;
+}
+
+.edit-field label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #666;
+}
+
+.edit-field .form-control {
+  font-size: 14px;
+}
+
+.edit-field textarea.form-control {
+  resize: vertical;
+  min-height: 60px;
+}
+
+/* Stats grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: linear-gradient(135deg, #f8f9fa, #fff);
+  border-radius: 10px;
+  border: 1px solid #eee;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.stat-icon {
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  border-radius: 8px;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.stat-value {
+  font-size: 15px;
+  font-weight: 800;
+  color: #333;
+}
+
+.loading-stats, .no-stats {
+  padding: 20px;
+  text-align: center;
+  color: #888;
+  font-weight: 600;
+}
+
+/* ========== CREATE FORM IMPROVEMENTS ========== */
+
+.create-form {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  margin: 16px auto;
+  max-width: 1200px;
+}
+
+.form-section-title {
+  margin: 16px 0 12px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #eee;
+}
+
+.form-section-title:first-child {
+  margin-top: 0;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.form-control-wide {
+  grid-column: span 2;
+}
+
+@media (max-width: 600px) {
+  .form-control-wide {
+    grid-column: span 1;
+  }
+}
+
+.create-form .btn-success {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* ========== BUTTON WARNING STYLE ========== */
+.btn-warning {
+  background: #f39c12;
+  color: #fff;
+}
+
+.btn-warning:hover {
+  background: #e67e22;
+}
