@@ -4,8 +4,8 @@
 /* New page container styles */
 .users-page-container {
   min-height: 100vh;
-  background: linear-gradient(180deg, #0a0a0f 0%, #111118 50%, #0a0a0f 100%);
-  padding-top: 100px;
+  background: linear-gradient(180deg, #000 0%, #000 60%, #e21f45 60%);
+  padding-top: 150px;
 }
 
 .users-page-content {
@@ -18,15 +18,16 @@
 .users-controls {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+  justify-content: flex-start;
+  gap: 12px;
   margin-bottom: 24px;
   flex-wrap: wrap;
 }
 
 .search-wrapper {
-  flex: 1;
-  max-width: 700px;
+  flex: 0 1 auto;
+  max-width: 500px;
+  min-width: 300px;
 }
 
 .table-page-wrap {

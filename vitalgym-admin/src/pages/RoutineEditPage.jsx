@@ -110,7 +110,7 @@ export default function RoutineEditPage() {
   };
 
   return (
-    <div className="page-container" style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #0a0a0f 0%, #111118 50%, #0a0a0f 100%)', paddingTop: '100px' }}>
+    <div className="page-container" style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #000 0%, #000 60%, #e21f45 60%)', paddingTop: '150px' }}>
       <NavBar />
       <div className="page-content" style={{ maxWidth: '1400px', margin: '0 auto', padding: '24px' }}>
         <PageHeader 

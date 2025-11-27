@@ -1,7 +1,7 @@
 /* ========== DASHBOARD STYLES ========== */
 .dashboard-container {
   min-height: 100vh;
-  background: linear-gradient(180deg, #0a0a0f 0%, #111118 50%, #0a0a0f 100%);
+  background: linear-gradient(180deg, #000 0%, #000 60%, #e21f45 60%);
   padding-top: 150px; /* Navbar (100px) + PageHeader (~50px) */
 }
 
