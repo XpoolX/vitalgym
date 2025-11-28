@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import NavBar from "../components/NavBar";
+import PageHeader from "../components/PageHeader";
 import api from "../api/axios";
 import html2pdf from "html2pdf.js";
 import "./PreviewPDFPage.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFilePdf } from "@fortawesome/free-solid-svg-icons";
 
 // Versión más robusta de normalizeSeries
 function normalizeSeries(series) {
@@ -235,10 +238,14 @@ export default function PreviewPDFPage() {
   };
 
   return (
-    <div className="preview-container">
+    <div className="preview-container" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, black 50%, crimson 50%)', paddingTop: '150px' }}>
       <NavBar />
-      <div className="preview-inner">
-        <h2 className="preview-title">📄 Previsualización PDF de Rutina</h2>
+      <div className="preview-inner" style={{ maxWidth: '1400px', margin: '0 auto', padding: '24px' }}>
+        <PageHeader 
+          icon={faFilePdf} 
+          title="Previsualización PDF" 
+          subtitle="Vista previa y exportación de la rutina"
+        />
 
         {loading && <p>Cargando rutina...</p>}
 
@@ -318,8 +325,8 @@ export default function PreviewPDFPage() {
 
             {dias.length > 0 && (
               <div className="export-btn">
-                <button onClick={exportarPDF} className="btn btn-primary">
-                  📄 Exportar PDF
+                <button onClick={exportarPDF} className="btn btn-primary" style={{ borderRadius: '12px', padding: '12px 24px' }}>
+                  <FontAwesomeIcon icon={faFilePdf} /> Exportar PDF
                 </button>
               </div>
             )}

@@ -1,0 +1,56 @@
+/* ========== SIMPLE PAGE HEADER - Fixed, full width, attached to navbar ========== */
+.page-header-simple {
+  position: fixed;
+  top: 90px; /* Right below the navbar */
+  left: 0;
+  right: 0;
+  width: 100%;
+  background: #1a1a2e; /* Solid dark color, contrasts with black navbar */
+  padding: 12px 24px;
+  border-bottom: 2px solid #dc143c;
+  z-index: 999; /* Just below navbar */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.page-header-simple-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-header-simple-icon {
+  color: #dc143c;
+  font-size: 20px;
+}
+
+.page-header-simple-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+
+.page-header-simple-subtitle {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 400;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .page-header-simple {
+    padding: 10px 16px;
+    top: 90px;
+  }
+
+  .page-header-simple-title {
+    font-size: 16px;
+  }
+
+  .page-header-simple-subtitle {
+    display: none;
+  }
+}

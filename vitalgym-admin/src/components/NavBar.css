@@ -46,11 +46,23 @@
 }
 
 .navbar-links li a {
-  color: crimson;
+  color: #ffffff; /* White links as requested */
   font-weight: bold;
   font-size: 1.1rem;
   text-decoration: none;
   transition: 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navbar-links li a svg {
+  font-size: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.navbar-links li a:hover svg {
+  transform: scale(1.15);
 }
 
 .navbar-links li a:hover {

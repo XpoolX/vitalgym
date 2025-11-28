@@ -7,6 +7,7 @@ import {
   Pressable,
   Image,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useFocusEffect } from "expo-router";
 import { apiAuth } from "../../lib/api";
 
@@ -335,9 +336,11 @@ export default function RoutineMine() {
                 <View style={{ flex: 1 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                     {/* Expand/collapse indicator */}
-                    <Text style={{ color: "#888", fontSize: 12 }}>
-                      {isExpanded ? "▼" : "▶"}
-                    </Text>
+                    <Ionicons 
+                      name={isExpanded ? "chevron-down" : "chevron-forward"} 
+                      size={12} 
+                      color="#888" 
+                    />
                     <Text
                       style={{
                         color: "white",
@@ -362,7 +365,7 @@ export default function RoutineMine() {
                       </View>
                     )}
                     {isCompleted && (
-                      <Text style={{ color: "#4CAF50", fontSize: 14 }}>✓</Text>
+                      <Ionicons name="checkmark" size={14} color="#4CAF50" />
                     )}
                   </View>
                   {isCompleted && completedInfo && (

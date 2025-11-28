@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import api from "../api/axios";
 import NavBar from "../components/NavBar";
+import PageHeader from "../components/PageHeader";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUser as faUserRegular,
@@ -15,6 +16,23 @@ import {
   faTimes as faTimesSolid,
   faChevronDown as faChevronDownSolid,
   faChevronUp as faChevronUpSolid,
+  faUsers,
+  faMapMarkerAlt,
+  faCreditCard,
+  faClipboardList,
+  faChartBar,
+  faClock,
+  faDoorOpen,
+  faCalendarWeek,
+  faCalendarDays,
+  faCalendarAlt,
+  faArrowTrendUp,
+  faFire,
+  faDumbbell,
+  faFileLines,
+  faCheck,
+  faBuilding,
+  faMoneyBill,
 } from "@fortawesome/free-solid-svg-icons";
 import "./UserListPage.css";
 
@@ -291,16 +309,17 @@ export default function UserListPage() {
   };
 
   return (
-    <div className="container-xl mt-4">
+    <div className="users-page-container">
       <NavBar />
-      <div className="table-header">
-        <div className="header-inner">
-          <div className="title-group">
-            <div className="emoji">👥</div>
-            <h1 className="page-title">Usuarios</h1>
-          </div>
-
-          <div className="center-controls">
+      <div className="users-page-content">
+        <PageHeader 
+          icon={faUsers} 
+          title="Gestión de Usuarios" 
+          subtitle="Administra los clientes del gimnasio"
+        />
+        
+        <div className="users-controls">
+          <div className="search-wrapper">
             <input
               className="search-input"
               placeholder="Buscar por nombre, email, usuario, población, calle, teléfono o Nº llave"
@@ -309,19 +328,15 @@ export default function UserListPage() {
               aria-label="Buscar usuarios"
             />
           </div>
-
-          <div className="right-controls">
-            <button
-              className="btn btn-create"
-              onClick={() => setMostrarFormulario(!mostrarFormulario)}
-              aria-expanded={mostrarFormulario}
-            >
-              <FontAwesomeIcon icon={faUserRegular} />{" "}
-              {mostrarFormulario ? "Cerrar formulario" : "Crear nuevo usuario"}
-            </button>
-          </div>
+          <button
+            className="btn btn-create"
+            onClick={() => setMostrarFormulario(!mostrarFormulario)}
+            aria-expanded={mostrarFormulario}
+          >
+            <FontAwesomeIcon icon={faUserRegular} />{" "}
+            {mostrarFormulario ? "Cerrar formulario" : "Crear nuevo usuario"}
+          </button>
         </div>
-      </div>
 
       {mostrarFormulario && (
         <div className="mb-4">
@@ -488,7 +503,7 @@ export default function UserListPage() {
             />
 
             <button className="btn btn-success mt-3" onClick={crearUsuario}>
-              ✅ Crear Usuario
+              <FontAwesomeIcon icon={faCheck} /> Crear Usuario
             </button>
           </div>
         </div>
@@ -740,7 +755,7 @@ export default function UserListPage() {
                         <div className="user-details-panel">
                           <div className="details-grid">
                             <div className="details-section">
-                              <h4 className="section-title">📍 Dirección</h4>
+                              <h4 className="section-title"><FontAwesomeIcon icon={faMapMarkerAlt} /> Dirección</h4>
                               <div className="details-content">
                                 {isEditing ? (
                                   <div className="edit-grid">
@@ -823,7 +838,7 @@ export default function UserListPage() {
                             </div>
 
                             <div className="details-section">
-                              <h4 className="section-title">💳 Información de Pago</h4>
+                              <h4 className="section-title"><FontAwesomeIcon icon={faCreditCard} /> Información de Pago</h4>
                               <div className="details-content">
                                 {isEditing ? (
                                   <div className="edit-grid">
@@ -861,9 +876,9 @@ export default function UserListPage() {
                                     <div className="info-item">
                                       <span className="info-label">Forma de pago:</span>
                                       <span className="info-value">
-                                        {u.formaPago === 'domiciliado' ? '🏦 Domiciliado' :
-                                         u.formaPago === 'efectivo' ? '💵 Efectivo' : 
-                                         u.formaPago === 'tarjeta' ? '💳 Tarjeta' : '—'}
+                                        {u.formaPago === 'domiciliado' ? <><FontAwesomeIcon icon={faBuilding} /> Domiciliado</> :
+                                         u.formaPago === 'efectivo' ? <><FontAwesomeIcon icon={faMoneyBill} /> Efectivo</> : 
+                                         u.formaPago === 'tarjeta' ? <><FontAwesomeIcon icon={faCreditCard} /> Tarjeta</> : '—'}
                                       </span>
                                     </div>
                                     <div className="info-item">
@@ -878,7 +893,7 @@ export default function UserListPage() {
                             </div>
 
                             <div className="details-section">
-                              <h4 className="section-title">📋 Datos Adicionales</h4>
+                              <h4 className="section-title"><FontAwesomeIcon icon={faClipboardList} /> Datos Adicionales</h4>
                               <div className="details-content">
                                 {isEditing ? (
                                   <div className="edit-grid">
@@ -921,70 +936,70 @@ export default function UserListPage() {
                             </div>
 
                             <div className="details-section stats-section">
-                              <h4 className="section-title">📊 Estadísticas</h4>
+                              <h4 className="section-title"><FontAwesomeIcon icon={faChartBar} /> Estadísticas</h4>
                               <div className="details-content">
                                 {loadingStats[u.id] ? (
                                   <div className="loading-stats">Cargando estadísticas...</div>
                                 ) : stats ? (
                                   <div className="stats-grid">
                                     <div className="stat-card">
-                                      <div className="stat-icon">🕐</div>
+                                      <div className="stat-icon"><FontAwesomeIcon icon={faClock} /></div>
                                       <div className="stat-info">
                                         <span className="stat-label">Última sesión</span>
                                         <span className="stat-value">{formatDate(stats.ultimaSesion)}</span>
                                       </div>
                                     </div>
                                     <div className="stat-card">
-                                      <div className="stat-icon">🚪</div>
+                                      <div className="stat-icon"><FontAwesomeIcon icon={faDoorOpen} /></div>
                                       <div className="stat-info">
                                         <span className="stat-label">Última apertura</span>
                                         <span className="stat-value">{formatDate(stats.ultimaApertura)}</span>
                                       </div>
                                     </div>
                                     <div className="stat-card">
-                                      <div className="stat-icon">📅</div>
+                                      <div className="stat-icon"><FontAwesomeIcon icon={faCalendarWeek} /></div>
                                       <div className="stat-info">
                                         <span className="stat-label">Entrenos esta semana</span>
                                         <span className="stat-value">{stats.entrenosSemana}</span>
                                       </div>
                                     </div>
                                     <div className="stat-card">
-                                      <div className="stat-icon">📆</div>
+                                      <div className="stat-icon"><FontAwesomeIcon icon={faCalendarDays} /></div>
                                       <div className="stat-info">
                                         <span className="stat-label">Entrenos este mes</span>
                                         <span className="stat-value">{stats.entrenosMes}</span>
                                       </div>
                                     </div>
                                     <div className="stat-card">
-                                      <div className="stat-icon">🗓️</div>
+                                      <div className="stat-icon"><FontAwesomeIcon icon={faCalendarAlt} /></div>
                                       <div className="stat-info">
                                         <span className="stat-label">Entrenos este año</span>
                                         <span className="stat-value">{stats.entrenosAnio}</span>
                                       </div>
                                     </div>
                                     <div className="stat-card">
-                                      <div className="stat-icon">📈</div>
+                                      <div className="stat-icon"><FontAwesomeIcon icon={faArrowTrendUp} /></div>
                                       <div className="stat-info">
                                         <span className="stat-label">Promedio semanal</span>
                                         <span className="stat-value">{stats.promedioSemanal} / semana</span>
                                       </div>
                                     </div>
                                     <div className="stat-card">
-                                      <div className="stat-icon">🔥</div>
+                                      <div className="stat-icon"><FontAwesomeIcon icon={faFire} /></div>
                                       <div className="stat-info">
                                         <span className="stat-label">Racha actual</span>
                                         <span className="stat-value">{stats.rachaActual} días</span>
                                       </div>
                                     </div>
                                     <div className="stat-card">
-                                      <div className="stat-icon">💪</div>
+                                      <div className="stat-icon"><FontAwesomeIcon icon={faDumbbell} /></div>
                                       <div className="stat-info">
                                         <span className="stat-label">Total entrenos</span>
                                         <span className="stat-value">{stats.totalEntrenos}</span>
                                       </div>
                                     </div>
                                     <div className="stat-card">
-                                      <div className="stat-icon">📝</div>
+                                      <div className="stat-icon"><FontAwesomeIcon icon={faFileLines} /></div>
                                       <div className="stat-info">
                                         <span className="stat-label">Fecha de registro</span>
                                         <span className="stat-value">{formatDateOnly(stats.fechaRegistro)}</span>
@@ -1035,6 +1050,7 @@ export default function UserListPage() {
             />
           </div>
         )}
+      </div>
       </div>
     </div>
   );

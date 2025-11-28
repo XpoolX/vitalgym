@@ -2,6 +2,9 @@ import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import NavBar from '../components/NavBar';
+import PageHeader from '../components/PageHeader';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus, faMinus, faTrash, faFloppyDisk, faFire, faCalendarDays, faDumbbell, faClipboardList, faFileLines, faClock, faSearch } from '@fortawesome/free-solid-svg-icons';
 
 export default function RoutineFormPage() {
   const [nombre, setNombre] = useState('');
@@ -182,69 +185,75 @@ export default function RoutineFormPage() {
   };
 
   return (
-    <div className="container-xl mt-5 pt-4">
+    <div className="page-container" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, black 50%, crimson 50%)', paddingTop: '150px' }}>
       <NavBar />
+      <div className="page-content" style={{ maxWidth: '1400px', margin: '0 auto', padding: '24px' }}>
+        <PageHeader 
+          icon={faClipboardList} 
+          title="Crear Nueva Rutina" 
+          subtitle="Diseña una rutina de entrenamiento personalizada"
+        />
 
-      <div className="card shadow-lg border-danger">
-        <div className="card-header bg-dark text-white">
-          <h5 className="mb-0">💪 Crear nueva rutina potente</h5>
-        </div>
-
-        <div className="card-body bg-black text-white">
-          <div className="mb-3">
-            <label className="form-label small mb-1" style={{ color: '#aaa' }}>📝 Nombre de la rutina</label>
-            <input
-              className="form-control bg-dark text-white border-danger"
-              placeholder="Ej: Rutina de hipertrofia, Full Body principiantes..."
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-            />
-            <small style={{ color: "#888" }}>Nombre descriptivo para identificar la rutina</small>
+        <div className="card shadow-lg border-danger" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+          <div className="card-header bg-dark text-white" style={{ padding: '20px 24px' }}>
+            <h5 className="mb-0"><FontAwesomeIcon icon={faDumbbell} /> Crear nueva rutina potente</h5>
           </div>
 
-          <div className="mb-3">
-            <label className="form-label small mb-1" style={{ color: '#aaa' }}>📄 Descripción</label>
-            <textarea
-              className="form-control bg-dark text-white border-danger"
-              placeholder="Describe el objetivo de esta rutina, para quién está diseñada..."
-              value={descripcion}
-              onChange={(e) => setDescripcion(e.target.value)}
-            />
-            <small style={{ color: "#888" }}>Objetivo y detalles de la rutina (opcional)</small>
-          </div>
+          <div className="card-body bg-black text-white" style={{ padding: '24px' }}>
+            <div className="mb-3">
+              <label className="form-label small mb-1" style={{ color: '#aaa' }}><FontAwesomeIcon icon={faFileLines} /> Nombre de la rutina</label>
+              <input
+                className="form-control bg-dark text-white border-danger"
+                placeholder="Ej: Rutina de hipertrofia, Full Body principiantes..."
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+              />
+              <small style={{ color: "#888" }}>Nombre descriptivo para identificar la rutina</small>
+            </div>
 
-          <div className="mb-3">
-            <label className="form-label small mb-1" style={{ color: '#aaa' }}>📅 Número de días de entrenamiento</label>
-            <input
-              type="number"
-              min="1"
-              max="7"
-              className="form-control bg-dark text-white border-danger"
-              style={{ width: '120px' }}
-              value={dias}
-              onChange={(e) => setDias(Math.max(1, parseInt(e.target.value || 1, 10)))}
-            />
-            <small style={{ color: "#888" }}>¿Cuántos días a la semana entrena el usuario?</small>
-          </div>
+            <div className="mb-3">
+              <label className="form-label small mb-1" style={{ color: '#aaa' }}><FontAwesomeIcon icon={faFileLines} /> Descripción</label>
+              <textarea
+                className="form-control bg-dark text-white border-danger"
+                placeholder="Describe el objetivo de esta rutina, para quién está diseñada..."
+                value={descripcion}
+                onChange={(e) => setDescripcion(e.target.value)}
+              />
+              <small style={{ color: "#888" }}>Objetivo y detalles de la rutina (opcional)</small>
+            </div>
 
-          {[...Array(dias)].map((_, diaIndex) => {
-            const dia = diaIndex + 1;
-            return (
-              <div key={dia} className="mb-4 p-3 border border-danger rounded">
-                <h6>🔥 Día {dia}</h6>
-                <button type="button" className="btn btn-outline-danger mb-3" onClick={() => agregarEjercicio(dia)}>
-                  ➕ Añadir ejercicio
-                </button>
+            <div className="mb-3">
+              <label className="form-label small mb-1" style={{ color: '#aaa' }}><FontAwesomeIcon icon={faCalendarDays} /> Número de días de entrenamiento</label>
+              <input
+                type="number"
+                min="1"
+                max="7"
+                className="form-control bg-dark text-white border-danger"
+                style={{ width: '120px' }}
+                value={dias}
+                onChange={(e) => setDias(Math.max(1, parseInt(e.target.value || 1, 10)))}
+              />
+              <small style={{ color: "#888" }}>¿Cuántos días a la semana entrena el usuario?</small>
+            </div>
 
-                {ejerciciosPorDia[dia] && ejerciciosPorDia[dia].map((ej, i) => {
-                  const dropdownKey = `${dia}-${i}`;
-                  const isOpen = openDropdown === dropdownKey;
-                  const selectedExercise = getSelectedExercise(ej);
-                  const filteredGroups = getFilteredExercises(dia, i);
+            {[...Array(dias)].map((_, diaIndex) => {
+              const dia = diaIndex + 1;
+              return (
+                <div key={dia} className="mb-4 p-3 border border-danger rounded" style={{ borderRadius: '12px' }}>
+                  <h6><FontAwesomeIcon icon={faFire} /> Día {dia}</h6>
+                  <button type="button" className="btn btn-outline-danger mb-3" onClick={() => agregarEjercicio(dia)}>
+                    <FontAwesomeIcon icon={faPlus} /> Añadir ejercicio
+                  </button>
 
-                  return (
-                    <div key={i} className="card p-3 mb-3 bg-dark text-white border-danger">
-                      <div className="row g-2 align-items-start">
+                  {ejerciciosPorDia[dia] && ejerciciosPorDia[dia].map((ej, i) => {
+                    const dropdownKey = `${dia}-${i}`;
+                    const isOpen = openDropdown === dropdownKey;
+                    const selectedExercise = getSelectedExercise(ej);
+                    const filteredGroups = getFilteredExercises(dia, i);
+
+                    return (
+                      <div key={i} className="card p-3 mb-3 bg-dark text-white border-danger" style={{ borderRadius: '12px' }}>
+                        <div className="row g-2 align-items-start">
                         <div className="col-md-4">
                           <label className="form-label small" style={{ color: '#aaa' }}>🏋️ Ejercicio</label>
                           <div className="exercise-dropdown-container position-relative">
@@ -290,7 +299,7 @@ export default function RoutineFormPage() {
                                   <input
                                     type="text"
                                     className="form-control form-control-sm bg-secondary text-white border-0"
-                                    placeholder="🔍 Buscar por nombre o músculo..."
+                                    placeholder="Buscar por nombre o músculo..."
                                     value={searchTerms[dropdownKey] || ''}
                                     onChange={(e) => {
                                       e.stopPropagation();
@@ -309,7 +318,7 @@ export default function RoutineFormPage() {
                                   filteredGroups.map(([grupo, ejercicios]) => (
                                     <div key={grupo}>
                                       <div className="px-2 py-1 bg-secondary text-white small fw-bold sticky-top" style={{ top: '45px' }}>
-                                        💪 {grupo}
+                                        <FontAwesomeIcon icon={faDumbbell} /> {grupo}
                                       </div>
                                       {ejercicios.map(ejercicio => {
                                         const isSelected = ej.id === ejercicio.id;
@@ -347,7 +356,7 @@ export default function RoutineFormPage() {
                                                   fontSize: '14px'
                                                 }}
                                               >
-                                                🏋️
+                                                <FontAwesomeIcon icon={faDumbbell} />
                                               </div>
                                             )}
                                             <div style={{ flex: 1, overflow: 'hidden' }}>
@@ -372,7 +381,7 @@ export default function RoutineFormPage() {
                         </div>
 
                         <div className="col-md-4">
-                          <label className="form-label small" style={{ color: '#aaa' }}>🔢 Series y repeticiones</label>
+                          <label className="form-label small" style={{ color: '#aaa' }}>Series y repeticiones</label>
                           <div className="d-flex flex-wrap align-items-center gap-1">
                             {Array.isArray(ej.series) && ej.series.map((serie, idx) => (
                               <input
@@ -391,7 +400,7 @@ export default function RoutineFormPage() {
                               onClick={() => agregarSerie(dia, i)}
                               title="Añadir serie"
                             >
-                              ➕
+                              <FontAwesomeIcon icon={faPlus} />
                             </button>
                             <button
                               type="button"
@@ -409,14 +418,14 @@ export default function RoutineFormPage() {
                               }}
                               title="Quitar serie"
                             >
-                              ➖
+                              <FontAwesomeIcon icon={faMinus} />
                             </button>
                           </div>
                           <small style={{ color: "#888" }}>Cada número es las reps de una serie</small>
                         </div>
 
                         <div className="col-md-2">
-                          <label className="form-label small" style={{ color: '#aaa' }}>⏱️ Descanso</label>
+                          <label className="form-label small" style={{ color: '#aaa' }}><FontAwesomeIcon icon={faClock} /> Descanso</label>
                           <div className="input-group">
                             <input
                               type="number"
@@ -438,12 +447,12 @@ export default function RoutineFormPage() {
                             onClick={() => eliminarEjercicio(dia, i)}
                             title="Eliminar ejercicio"
                           >
-                            ❌
+                            <FontAwesomeIcon icon={faTrash} />
                           </button>
                         </div>
 
                         <div className="col-12 mt-2">
-                          <label className="form-label small" style={{ color: '#aaa' }}>📝 Notas personales</label>
+                          <label className="form-label small" style={{ color: '#aaa' }}><FontAwesomeIcon icon={faFileLines} /> Notas personales</label>
                           <textarea
                             className="form-control bg-dark text-white border-danger"
                             placeholder="Instrucciones especiales, variaciones, tips..."
@@ -462,10 +471,11 @@ export default function RoutineFormPage() {
             );
           })}
 
-          <button type="button" className="btn btn-success btn-lg mt-4 w-100" onClick={guardarRutina}>
-            💾 Guardar rutina completa
+          <button type="button" className="btn btn-success btn-lg mt-4 w-100" onClick={guardarRutina} style={{ borderRadius: '12px' }}>
+            <FontAwesomeIcon icon={faFloppyDisk} /> Guardar rutina completa
           </button>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import {
   Image,
   Pressable,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { apiAuth } from "../../lib/api";
 import * as SecureStore from "expo-secure-store";
 import { useRouter } from "expo-router";
@@ -351,7 +352,7 @@ export default function HomeProfile() {
                 justifyContent: "center",
               }}
             >
-              <Text style={{ fontSize: 24 }}>💪</Text>
+              <Ionicons name="fitness" size={24} color="white" />
             </View>
           </View>
           <Text style={{ color: "rgba(255,255,255,0.6)", fontSize: 12, marginTop: 12 }}>
@@ -361,9 +362,12 @@ export default function HomeProfile() {
       )}
 
       {/* Statistics Section */}
-      <Text style={{ color: "white", fontSize: 18, fontWeight: "800", marginBottom: 12 }}>
-        📊 Mis Estadísticas
-      </Text>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
+        <Ionicons name="stats-chart" size={20} color="#C20F0F" />
+        <Text style={{ color: "white", fontSize: 18, fontWeight: "800" }}>
+          Mis Estadísticas
+        </Text>
+      </View>
 
       <View style={{ gap: 12 }}>
         {/* Top stats row */}
@@ -379,7 +383,7 @@ export default function HomeProfile() {
               alignItems: "center",
             }}
           >
-            <Text style={{ fontSize: 28 }}>🔥</Text>
+            <Ionicons name="flame" size={28} color="#f97316" />
             <Text style={{ color: "white", fontSize: 28, fontWeight: "800", marginTop: 4 }}>
               {stats?.rachaActual ?? 0}
             </Text>
@@ -399,7 +403,7 @@ export default function HomeProfile() {
               alignItems: "center",
             }}
           >
-            <Text style={{ fontSize: 28 }}>💪</Text>
+            <Ionicons name="barbell" size={28} color="#C20F0F" />
             <Text style={{ color: "white", fontSize: 28, fontWeight: "800", marginTop: 4 }}>
               {stats?.totalEntrenos ?? 0}
             </Text>
@@ -445,7 +449,7 @@ export default function HomeProfile() {
           <View style={{ borderTopWidth: 1, borderTopColor: "#333", paddingTop: 16 }}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 12 }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                <Text style={{ fontSize: 16 }}>📈</Text>
+                <Ionicons name="trending-up" size={16} color="#22c55e" />
                 <Text style={{ color: "#888", fontSize: 13 }}>Promedio semanal</Text>
               </View>
               <Text style={{ color: "white", fontWeight: "700" }}>
@@ -455,7 +459,7 @@ export default function HomeProfile() {
 
             <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                <Text style={{ fontSize: 16 }}>🕐</Text>
+                <Ionicons name="time" size={16} color="#8b5cf6" />
                 <Text style={{ color: "#888", fontSize: 13 }}>Última sesión</Text>
               </View>
               <Text style={{ color: "white", fontWeight: "700" }}>

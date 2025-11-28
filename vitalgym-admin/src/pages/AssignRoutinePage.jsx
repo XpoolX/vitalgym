@@ -1,8 +1,9 @@
 import { useEffect, useState, useMemo } from 'react';
 import api from '../api/axios';
 import NavBar from '../components/NavBar';
+import PageHeader from '../components/PageHeader';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPen, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faPen, faPlus, faBullseye, faUser, faDumbbell, faSearch, faCheck } from '@fortawesome/free-solid-svg-icons';
 
 export default function AssignRoutinePage() {
   const [usuarios, setUsuarios] = useState([]);
@@ -85,7 +86,7 @@ export default function AssignRoutinePage() {
       routineId: rutinaSeleccionada,
     });
 
-    setMensaje('✅ Rutina asignada correctamente');
+    setMensaje('Rutina asignada correctamente');
     fetchData(); 
   };
 
@@ -98,245 +99,254 @@ export default function AssignRoutinePage() {
   };
 
   return (
-    <div className="container-xl mt-5 pt-4">
+    <div className="page-container" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, black 50%, crimson 50%)', paddingTop: '150px' }}>
       <NavBar />
+      <div className="page-content" style={{ maxWidth: '1400px', margin: '0 auto', padding: '24px' }}>
+        <PageHeader 
+          icon={faBullseye} 
+          title="Asignar Rutinas" 
+          subtitle="Vincula rutinas personalizadas a cada usuario del gimnasio"
+        />
 
-      <div className="card shadow-lg border-danger">
-        <div className="card-header bg-dark text-white">
-          <h5 className="mb-0">📌 Asignar rutina a usuario</h5>
-        </div>
-        <div className="card-body bg-black text-white">
-          <div className="row g-3">
-            {/* User Dropdown */}
-            <div className="col-md-6">
-              <label className="form-label" style={{ color: '#aaa' }}>👤 Selecciona un usuario:</label>
-              <div className="searchable-dropdown position-relative">
-                <div
-                  className="form-control bg-dark text-white border-danger d-flex align-items-center justify-content-between"
-                  style={{ cursor: 'pointer', minHeight: '42px' }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setUserDropdownOpen(!userDropdownOpen);
-                    setRoutineDropdownOpen(false);
-                  }}
-                >
-                  {selectedUser ? (
-                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      <span style={{ fontWeight: '600' }}>{selectedUser.nombre}</span>
-                      <span style={{ color: '#888', marginLeft: '8px' }}>({selectedUser.email})</span>
-                    </div>
-                  ) : (
-                    <span style={{ color: '#888' }}>-- Elegir usuario --</span>
-                  )}
-                  <span style={{ marginLeft: '8px' }}>{userDropdownOpen ? '▲' : '▼'}</span>
-                </div>
-
-                {userDropdownOpen && (
-                  <div 
-                    className="position-absolute w-100 bg-dark border border-danger rounded-bottom shadow-lg"
-                    style={{ zIndex: 1000, maxHeight: '300px', overflowY: 'auto', top: '100%', left: 0 }}
+        <div className="card shadow-lg border-danger" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+          <div className="card-header bg-dark text-white" style={{ padding: '20px 24px' }}>
+            <h5 className="mb-0"><FontAwesomeIcon icon={faBullseye} /> Asignar rutina a usuario</h5>
+          </div>
+          <div className="card-body bg-black text-white" style={{ padding: '24px' }}>
+            <div className="row g-3">
+              {/* User Dropdown */}
+              <div className="col-md-6">
+                <label className="form-label" style={{ color: '#aaa' }}><FontAwesomeIcon icon={faUser} /> Selecciona un usuario:</label>
+                <div className="searchable-dropdown position-relative">
+                  <div
+                    className="form-control bg-dark text-white border-danger d-flex align-items-center justify-content-between"
+                    style={{ cursor: 'pointer', minHeight: '42px' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setUserDropdownOpen(!userDropdownOpen);
+                      setRoutineDropdownOpen(false);
+                    }}
                   >
-                    <div className="p-2 border-bottom border-secondary sticky-top bg-dark">
-                      <input
-                        type="text"
-                        className="form-control form-control-sm bg-secondary text-white border-0"
-                        placeholder="🔍 Buscar por nombre, email o teléfono..."
-                        value={userSearch}
-                        onChange={(e) => setUserSearch(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        autoFocus
-                      />
-                    </div>
-                    {filteredUsers.length === 0 ? (
-                      <div className="p-3 text-center" style={{ color: '#888' }}>No se encontraron usuarios</div>
+                    {selectedUser ? (
+                      <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <span style={{ fontWeight: '600' }}>{selectedUser.nombre}</span>
+                        <span style={{ color: '#888', marginLeft: '8px' }}>({selectedUser.email})</span>
+                      </div>
                     ) : (
-                      filteredUsers.map(user => {
-                        const isSelected = usuarioSeleccionado === user.id.toString();
-                        return (
-                          <div
-                            key={user.id}
-                            className={`px-3 py-2 ${isSelected ? 'bg-success' : ''}`}
-                            style={{ cursor: 'pointer', borderBottom: '1px solid #333' }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              selectUser(user);
-                            }}
-                            onMouseEnter={(e) => !isSelected && (e.currentTarget.style.background = '#333')}
-                            onMouseLeave={(e) => !isSelected && (e.currentTarget.style.background = '')}
-                          >
-                            <div style={{ fontWeight: '600' }}>{user.nombre}</div>
-                            <div style={{ fontSize: '12px', color: '#aaa' }}>
-                              {user.email} {user.telefono && `• ${user.telefono}`}
-                            </div>
-                            {user.rutinaAsignadaId && (
-                              <span className="badge bg-warning text-dark" style={{ fontSize: '10px' }}>
-                                Ya tiene rutina
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })
+                      <span style={{ color: '#888' }}>-- Elegir usuario --</span>
                     )}
+                    <span style={{ marginLeft: '8px' }}>{userDropdownOpen ? '▲' : '▼'}</span>
                   </div>
-                )}
-              </div>
-              <small style={{ color: '#666' }}>Busca por nombre, email o teléfono</small>
-            </div>
 
-            {/* Routine Dropdown */}
-            <div className="col-md-6">
-              <label className="form-label" style={{ color: '#aaa' }}>🏋️ Selecciona una rutina:</label>
-              <div className="searchable-dropdown position-relative">
-                <div
-                  className="form-control bg-dark text-white border-danger d-flex align-items-center justify-content-between"
-                  style={{ cursor: 'pointer', minHeight: '42px' }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setRoutineDropdownOpen(!routineDropdownOpen);
-                    setUserDropdownOpen(false);
-                  }}
-                >
-                  {selectedRoutine ? (
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: '600' }}>
-                      {selectedRoutine.nombre}
-                    </span>
-                  ) : (
-                    <span style={{ color: '#888' }}>-- Elegir rutina --</span>
-                  )}
-                  <span style={{ marginLeft: '8px' }}>{routineDropdownOpen ? '▲' : '▼'}</span>
-                </div>
-
-                {routineDropdownOpen && (
-                  <div 
-                    className="position-absolute w-100 bg-dark border border-danger rounded-bottom shadow-lg"
-                    style={{ zIndex: 1000, maxHeight: '300px', overflowY: 'auto', top: '100%', left: 0 }}
-                  >
-                    <div className="p-2 border-bottom border-secondary sticky-top bg-dark">
-                      <input
-                        type="text"
-                        className="form-control form-control-sm bg-secondary text-white border-0"
-                        placeholder="🔍 Buscar rutina por nombre..."
-                        value={routineSearch}
-                        onChange={(e) => setRoutineSearch(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        autoFocus
-                      />
-                    </div>
-                    {filteredRoutines.length === 0 ? (
-                      <div className="p-3 text-center" style={{ color: '#888' }}>No se encontraron rutinas</div>
-                    ) : (
-                      filteredRoutines.map(routine => {
-                        const isSelected = rutinaSeleccionada === routine.id.toString();
-                        const usersWithRoutine = usuarios.filter(u => u.rutinaAsignadaId === routine.id).length;
-                        return (
-                          <div
-                            key={routine.id}
-                            className={`px-3 py-2 ${isSelected ? 'bg-success' : ''}`}
-                            style={{ cursor: 'pointer', borderBottom: '1px solid #333' }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              selectRoutine(routine);
-                            }}
-                            onMouseEnter={(e) => !isSelected && (e.currentTarget.style.background = '#333')}
-                            onMouseLeave={(e) => !isSelected && (e.currentTarget.style.background = '')}
-                          >
-                            <div style={{ fontWeight: '600' }}>{routine.nombre}</div>
-                            {routine.descripcion && (
-                              <div style={{ fontSize: '12px', color: '#aaa', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                {routine.descripcion}
+                  {userDropdownOpen && (
+                    <div 
+                      className="position-absolute w-100 bg-dark border border-danger rounded-bottom shadow-lg"
+                      style={{ zIndex: 1000, maxHeight: '300px', overflowY: 'auto', top: '100%', left: 0 }}
+                    >
+                      <div className="p-2 border-bottom border-secondary sticky-top bg-dark">
+                        <input
+                          type="text"
+                          className="form-control form-control-sm bg-secondary text-white border-0"
+                          placeholder="Buscar por nombre, email o teléfono..."
+                          value={userSearch}
+                          onChange={(e) => setUserSearch(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                          autoFocus
+                        />
+                      </div>
+                      {filteredUsers.length === 0 ? (
+                        <div className="p-3 text-center" style={{ color: '#888' }}>No se encontraron usuarios</div>
+                      ) : (
+                        filteredUsers.map(user => {
+                          const isSelected = usuarioSeleccionado === user.id.toString();
+                          return (
+                            <div
+                              key={user.id}
+                              className={`px-3 py-2 ${isSelected ? 'bg-success' : ''}`}
+                              style={{ cursor: 'pointer', borderBottom: '1px solid #333' }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                selectUser(user);
+                              }}
+                              onMouseEnter={(e) => !isSelected && (e.currentTarget.style.background = '#333')}
+                              onMouseLeave={(e) => !isSelected && (e.currentTarget.style.background = '')}
+                            >
+                              <div style={{ fontWeight: '600' }}>{user.nombre}</div>
+                              <div style={{ fontSize: '12px', color: '#aaa' }}>
+                                {user.email} {user.telefono && `• ${user.telefono}`}
                               </div>
-                            )}
-                            <span className="badge bg-secondary" style={{ fontSize: '10px' }}>
-                              {usersWithRoutine} usuario{usersWithRoutine !== 1 ? 's' : ''}
-                            </span>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                )}
+                              {user.rutinaAsignadaId && (
+                                <span className="badge bg-warning text-dark" style={{ fontSize: '10px' }}>
+                                  Ya tiene rutina
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  )}
+                </div>
+                <small style={{ color: '#666' }}>Busca por nombre, email o teléfono</small>
               </div>
-              <small style={{ color: '#666' }}>Busca por nombre o descripción</small>
-            </div>
-          </div>
 
-          <div className="mt-4 text-end">
-            <button className="btn btn-success btn-lg" onClick={asignar}>
-              <FontAwesomeIcon icon={faPlus} className="me-2" color="white" /> Asignar rutina
-            </button>
-          </div>
+              {/* Routine Dropdown */}
+              <div className="col-md-6">
+                <label className="form-label" style={{ color: '#aaa' }}><FontAwesomeIcon icon={faDumbbell} /> Selecciona una rutina:</label>
+                <div className="searchable-dropdown position-relative">
+                  <div
+                    className="form-control bg-dark text-white border-danger d-flex align-items-center justify-content-between"
+                    style={{ cursor: 'pointer', minHeight: '42px' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setRoutineDropdownOpen(!routineDropdownOpen);
+                      setUserDropdownOpen(false);
+                    }}
+                  >
+                    {selectedRoutine ? (
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: '600' }}>
+                        {selectedRoutine.nombre}
+                      </span>
+                    ) : (
+                      <span style={{ color: '#888' }}>-- Elegir rutina --</span>
+                    )}
+                    <span style={{ marginLeft: '8px' }}>{routineDropdownOpen ? '▲' : '▼'}</span>
+                  </div>
 
-          {mensaje && (
-            <div className="alert alert-success mt-4" role="alert">
-              {mensaje}
+                  {routineDropdownOpen && (
+                    <div 
+                      className="position-absolute w-100 bg-dark border border-danger rounded-bottom shadow-lg"
+                      style={{ zIndex: 1000, maxHeight: '300px', overflowY: 'auto', top: '100%', left: 0 }}
+                    >
+                      <div className="p-2 border-bottom border-secondary sticky-top bg-dark">
+                        <input
+                          type="text"
+                          className="form-control form-control-sm bg-secondary text-white border-0"
+                          placeholder="Buscar rutina por nombre..."
+                          value={routineSearch}
+                          onChange={(e) => setRoutineSearch(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                          autoFocus
+                        />
+                      </div>
+                      {filteredRoutines.length === 0 ? (
+                        <div className="p-3 text-center" style={{ color: '#888' }}>No se encontraron rutinas</div>
+                      ) : (
+                        filteredRoutines.map(routine => {
+                          const isSelected = rutinaSeleccionada === routine.id.toString();
+                          const usersWithRoutine = usuarios.filter(u => u.rutinaAsignadaId === routine.id).length;
+                          return (
+                            <div
+                              key={routine.id}
+                              className={`px-3 py-2 ${isSelected ? 'bg-success' : ''}`}
+                              style={{ cursor: 'pointer', borderBottom: '1px solid #333' }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                selectRoutine(routine);
+                              }}
+                              onMouseEnter={(e) => !isSelected && (e.currentTarget.style.background = '#333')}
+                              onMouseLeave={(e) => !isSelected && (e.currentTarget.style.background = '')}
+                            >
+                              <div style={{ fontWeight: '600' }}>{routine.nombre}</div>
+                              {routine.descripcion && (
+                                <div style={{ fontSize: '12px', color: '#aaa', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {routine.descripcion}
+                                </div>
+                              )}
+                              <span className="badge bg-secondary" style={{ fontSize: '10px' }}>
+                                {usersWithRoutine} usuario{usersWithRoutine !== 1 ? 's' : ''}
+                              </span>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  )}
+                </div>
+                <small style={{ color: '#666' }}>Busca por nombre o descripción</small>
+              </div>
             </div>
-          )}
+
+            <div className="mt-4 text-end">
+              <button className="btn btn-success btn-lg" onClick={asignar} style={{ borderRadius: '12px', padding: '12px 24px' }}>
+                <FontAwesomeIcon icon={faPlus} className="me-2" color="white" /> Asignar rutina
+              </button>
+            </div>
+
+            {mensaje && (
+              <div className="alert alert-success mt-4" role="alert">
+                <FontAwesomeIcon icon={faCheck} /> {mensaje}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* 🗂️ Rutinas asignadas */}
-      <div className="mt-5">
-        <div className="card shadow-lg border-danger">
-          <div className="card-header bg-dark text-white">
-            <h5 className="mb-0">🗂️ Rutinas asignadas</h5>
-          </div>
-          <div className="card-body bg-black p-0">
-            <table className="table table-dark table-hover mb-0">
-              <thead>
-                <tr style={{ borderBottom: '2px solid #c20f0f' }}>
-                  <th>Usuario</th>
-                  <th>Email</th>
-                  <th>Rutina asignada</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {usuarios
-                  .filter((u) => u.rutinaAsignadaId)
-                  .map((u) => {
-                    const rutina = rutinas.find((r) => r.id === u.rutinaAsignadaId);
-                    return (
-                      <tr key={u.id}>
-                        <td>{u.nombre}</td>
-                        <td style={{ color: '#aaa' }}>{u.email}</td>
-                        <td>
-                          <span className="badge bg-danger">{rutina ? rutina.nombre : 'Sin rutina'}</span>
-                        </td>
-                        <td>
-                          <button
-                            className="btn btn-sm btn-outline-danger me-2"
-                            onClick={() => eliminarAsignacion(u.id)}
-                            title="Eliminar asignación"
-                          >
-                            <FontAwesomeIcon icon={faTrash} />
-                          </button>
-                          <button
-                            className="btn btn-sm btn-outline-primary"
-                            onClick={() => {
-                              setUsuarioSeleccionado(u.id.toString());
-                              setRutinaSeleccionada(rutina?.id?.toString() || '');
-                              window.scrollTo({ top: 0, behavior: 'smooth' });
-                            }}
-                            title="Editar asignación"
-                          >
-                            <FontAwesomeIcon icon={faPen} />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                {usuarios.filter((u) => u.rutinaAsignadaId).length === 0 && (
-                  <tr>
-                    <td colSpan="4" className="text-center py-4" style={{ color: '#666' }}>
-                      No hay rutinas asignadas todavía
-                    </td>
+        {/* Rutinas asignadas */}
+        <div className="mt-5">
+          <div className="card shadow-lg border-danger" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+            <div className="card-header bg-dark text-white" style={{ padding: '20px 24px' }}>
+              <h5 className="mb-0"><FontAwesomeIcon icon={faClipboardList} /> Rutinas asignadas</h5>
+            </div>
+            <div className="card-body bg-black p-0">
+              <table className="table table-dark table-hover mb-0">
+                <thead>
+                  <tr style={{ borderBottom: '2px solid #c20f0f' }}>
+                    <th>Usuario</th>
+                    <th>Email</th>
+                    <th>Rutina asignada</th>
+                    <th>Acciones</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {usuarios
+                    .filter((u) => u.rutinaAsignadaId)
+                    .map((u) => {
+                      const rutina = rutinas.find((r) => r.id === u.rutinaAsignadaId);
+                      return (
+                        <tr key={u.id}>
+                          <td>{u.nombre}</td>
+                          <td style={{ color: '#aaa' }}>{u.email}</td>
+                          <td>
+                            <span className="badge bg-danger">{rutina ? rutina.nombre : 'Sin rutina'}</span>
+                          </td>
+                          <td>
+                            <button
+                              className="btn btn-sm btn-outline-danger me-2"
+                              onClick={() => eliminarAsignacion(u.id)}
+                              title="Eliminar asignación"
+                            >
+                              <FontAwesomeIcon icon={faTrash} />
+                            </button>
+                            <button
+                              className="btn btn-sm btn-outline-primary"
+                              onClick={() => {
+                                setUsuarioSeleccionado(u.id.toString());
+                                setRutinaSeleccionada(rutina?.id?.toString() || '');
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                              }}
+                              title="Editar asignación"
+                            >
+                              <FontAwesomeIcon icon={faPen} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  {usuarios.filter((u) => u.rutinaAsignadaId).length === 0 && (
+                    <tr>
+                      <td colSpan="4" className="text-center py-4" style={{ color: '#666' }}>
+                        No hay rutinas asignadas todavía
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+import { faClipboardList } from '@fortawesome/free-solid-svg-icons';
