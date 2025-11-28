@@ -9,6 +9,7 @@ import {
   Image,
   Pressable,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { apiAuth } from "../../lib/api";
 
 const BASE_URL = "https://vitalgym.fit";
@@ -205,7 +206,7 @@ export default function ExerciseScreen() {
               {title}
             </Text>
             <Pressable onPress={() => {}}>
-              <Text style={{ color: "white", fontSize: 20 }}>♡</Text>
+              <Ionicons name="heart-outline" size={24} color="white" />
             </Pressable>
           </View>
         </View>
@@ -221,17 +222,17 @@ export default function ExerciseScreen() {
             }}
           >
             <View style={{ alignItems: "center", gap: 4 }}>
-              <Text style={{ color: "white" }}>⏱</Text>
+              <Ionicons name="timer-outline" size={20} color="white" />
               <Text style={{ color: "white", fontSize: 12 }}>
                 {descanso ? `${(descanso / 60).toFixed(0).padStart(2, "0")}:00` : "02:00"}
               </Text>
             </View>
             <View style={{ alignItems: "center", gap: 4 }}>
-              <Text style={{ color: "white" }}>▶</Text>
+              <Ionicons name="play-circle-outline" size={20} color="white" />
               <Text style={{ color: "white", fontSize: 12 }}>Instrucciones</Text>
             </View>
             <View style={{ alignItems: "center", gap: 4 }}>
-              <Text style={{ color: "white" }}>📊</Text>
+              <Ionicons name="analytics-outline" size={20} color="white" />
               <Text style={{ color: "white", fontSize: 12 }}>Analíticas</Text>
             </View>
           </View>
@@ -248,7 +249,7 @@ export default function ExerciseScreen() {
                 gap: 8,
               }}
             >
-              <Text style={{ color: "#C6FF00" }}>✓</Text>
+              <Ionicons name="checkmark" size={16} color="#C6FF00" />
               <Text style={{ color: "#C6FF00", fontSize: 13 }}>
                 Último entrenamiento: {new Date(lastData.fecha).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}
               </Text>

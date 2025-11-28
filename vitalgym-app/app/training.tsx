@@ -12,6 +12,7 @@ import {
   Alert,
   Modal,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { apiAuth } from "../lib/api";
 
@@ -397,7 +398,7 @@ export default function TrainingScreen() {
                 justifyContent: "center",
               }}
             >
-              <Text style={{ color: "#666", fontSize: 40 }}>🏋️</Text>
+              <Ionicons name="barbell" size={40} color="#666" />
             </View>
           )}
 
@@ -466,7 +467,7 @@ export default function TrainingScreen() {
             }}
           >
             <View style={{ alignItems: "center", gap: 4 }}>
-              <Text style={{ color: "white", fontSize: 18 }}>⏱</Text>
+              <Ionicons name="timer-outline" size={18} color="white" />
               <Text style={{ color: "white", fontSize: 12 }}>
                 {formatTime(restSeconds)}
               </Text>
@@ -475,11 +476,11 @@ export default function TrainingScreen() {
               onPress={() => setShowInstructions(true)}
               style={{ alignItems: "center", gap: 4 }}
             >
-              <Text style={{ color: "white", fontSize: 18 }}>▶</Text>
+              <Ionicons name="play-circle-outline" size={18} color="white" />
               <Text style={{ color: "white", fontSize: 12 }}>Instrucciones</Text>
             </Pressable>
             <View style={{ alignItems: "center", gap: 4 }}>
-              <Text style={{ color: "white", fontSize: 18 }}>📊</Text>
+              <Ionicons name="analytics-outline" size={18} color="white" />
               <Text style={{ color: "white", fontSize: 12 }}>Analíticas</Text>
             </View>
           </View>

@@ -1,12 +1,8 @@
 // app/(tabs)/_layout.tsx
 import { Tabs } from "expo-router";
-import { Text } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function TabsLayout() {
-  const Icon = ({ label }: { label: string }) => (
-    <Text style={{ fontSize: 18, lineHeight: 20 }}>{label}</Text>
-  );
-
   return (
     <Tabs
       screenOptions={({ route }) => ({
@@ -16,14 +12,20 @@ export default function TabsLayout() {
         tabBarActiveTintColor: "#C20F0F",
         tabBarInactiveTintColor: "#9a9a9a",
         headerTitleStyle: { fontWeight: "800" },
-        tabBarIcon: ({ focused }) => {
-          const map: Record<string, { on: string; off: string }> = {
-            index:   { on: "🏠", off: "🏡" },
-            routines:{ on: "🏋️‍♂️", off: "🏋️" },
-            profile: { on: "👤", off: "🙂" },
-          };
-          const pair = map[route.name] ?? { on: "⬤", off: "◯" };
-          return <Icon label={focused ? pair.on : pair.off} />;
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName: keyof typeof Ionicons.glyphMap;
+          
+          if (route.name === "index") {
+            iconName = focused ? "home" : "home-outline";
+          } else if (route.name === "routines") {
+            iconName = focused ? "barbell" : "barbell-outline";
+          } else if (route.name === "profile") {
+            iconName = focused ? "person" : "person-outline";
+          } else {
+            iconName = "ellipse";
+          }
+          
+          return <Ionicons name={iconName} size={size} color={color} />;
         },
       })}
     >
