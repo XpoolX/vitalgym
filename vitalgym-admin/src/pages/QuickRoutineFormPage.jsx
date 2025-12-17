@@ -14,6 +14,7 @@ export default function QuickRoutineFormPage() {
   const [ejerciciosPorDia, setEjerciciosPorDia] = useState({});
   const [grupoMuscularFilter, setGrupoMuscularFilter] = useState({});
   const [searchTerms, setSearchTerms] = useState({});
+  const [editingExercise, setEditingExercise] = useState({}); // Track which exercise is being edited
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -121,6 +122,12 @@ export default function QuickRoutineFormPage() {
     }
     actualizarCampo(dia, i, 'id', ejercicio.id);
     actualizarCampo(dia, i, 'ejercicioData', ejercicio);
+    
+    // Hide the selector after selection
+    const key = `${dia}-${i}`;
+    setEditingExercise(prev => ({ ...prev, [key]: false }));
+    setSearchTerms(prev => ({ ...prev, [key]: '' }));
+    setGrupoMuscularFilter(prev => ({ ...prev, [key]: '' }));
   };
 
   const guardarRutina = async () => {
@@ -262,6 +269,7 @@ export default function QuickRoutineFormPage() {
                     const dropdownKey = `${dia}-${i}`;
                     const selectedExercise = getSelectedExercise(ej);
                     const filteredGroups = getFilteredExercises(dia, i);
+                    const isEditing = editingExercise[dropdownKey] !== false && (!selectedExercise || editingExercise[dropdownKey]);
 
                     return (
                       <div key={i} className="card p-3 mb-3 bg-dark text-white border-warning" style={{ borderRadius: '8px' }}>
@@ -269,68 +277,79 @@ export default function QuickRoutineFormPage() {
                           <div className="col-md-5">
                             <label className="form-label small text-warning">🏋️ Ejercicio</label>
                             
-                            {/* Muscle group filter */}
-                            <select
-                              className="form-select form-select-sm bg-secondary text-white border-0 mb-2"
-                              value={grupoMuscularFilter[dropdownKey] || ''}
-                              onChange={(e) => {
-                                setGrupoMuscularFilter(prev => ({ ...prev, [dropdownKey]: e.target.value }));
-                              }}
-                            >
-                              <option value="">Todos los grupos musculares</option>
-                              {gruposMusculares.map(grupo => (
-                                <option key={grupo} value={grupo}>{grupo}</option>
-                              ))}
-                            </select>
+                            {/* Show selector only if no exercise selected OR if editing */}
+                            {isEditing ? (
+                              <>
+                                {/* Muscle group filter */}
+                                <select
+                                  className="form-select form-select-sm bg-secondary text-white border-0 mb-2"
+                                  value={grupoMuscularFilter[dropdownKey] || ''}
+                                  onChange={(e) => {
+                                    setGrupoMuscularFilter(prev => ({ ...prev, [dropdownKey]: e.target.value }));
+                                  }}
+                                >
+                                  <option value="">Todos los grupos musculares</option>
+                                  {gruposMusculares.map(grupo => (
+                                    <option key={grupo} value={grupo}>{grupo}</option>
+                                  ))}
+                                </select>
 
-                            {/* Exercise search and select */}
-                            <input
-                              type="text"
-                              className="form-control form-control-sm bg-secondary text-white border-0 mb-2"
-                              placeholder="Buscar ejercicio..."
-                              value={searchTerms[dropdownKey] || ''}
-                              onChange={(e) => setSearchTerms(prev => ({ ...prev, [dropdownKey]: e.target.value }))}
-                            />
+                                {/* Exercise search and select */}
+                                <input
+                                  type="text"
+                                  className="form-control form-control-sm bg-secondary text-white border-0 mb-2"
+                                  placeholder="Buscar ejercicio..."
+                                  value={searchTerms[dropdownKey] || ''}
+                                  onChange={(e) => setSearchTerms(prev => ({ ...prev, [dropdownKey]: e.target.value }))}
+                                  autoFocus
+                                />
 
-                            {/* Exercise dropdown */}
-                            {(searchTerms[dropdownKey] || grupoMuscularFilter[dropdownKey]) && (
-                              <div 
-                                className="bg-dark border border-secondary rounded mb-2" 
-                                style={{ maxHeight: '200px', overflowY: 'auto' }}
-                              >
-                                {filteredGroups.length === 0 ? (
-                                  <div className="p-2 text-center text-muted small">
-                                    No se encontraron ejercicios
-                                  </div>
-                                ) : (
-                                  filteredGroups.map(([grupo, ejercicios]) => (
-                                    <div key={grupo}>
-                                      <div className="px-2 py-1 bg-secondary text-white small fw-bold">
-                                        {grupo}
+                                {/* Exercise dropdown */}
+                                {(searchTerms[dropdownKey] || grupoMuscularFilter[dropdownKey]) && (
+                                  <div 
+                                    className="bg-dark border border-secondary rounded mb-2" 
+                                    style={{ maxHeight: '200px', overflowY: 'auto' }}
+                                  >
+                                    {filteredGroups.length === 0 ? (
+                                      <div className="p-2 text-center text-muted small">
+                                        No se encontraron ejercicios
                                       </div>
-                                      {ejercicios.map(ejercicio => (
-                                        <div
-                                          key={ejercicio.id}
-                                          className={`px-2 py-1 small ${ej.id === ejercicio.id ? 'bg-success' : ''}`}
-                                          style={{ 
-                                            cursor: 'pointer',
-                                            borderBottom: '1px solid #333'
-                                          }}
-                                          onClick={() => seleccionarEjercicio(dia, i, ejercicio)}
-                                        >
-                                          {ejercicio.nombre}
+                                    ) : (
+                                      filteredGroups.map(([grupo, ejercicios]) => (
+                                        <div key={grupo}>
+                                          <div className="px-2 py-1 bg-secondary text-white small fw-bold">
+                                            {grupo}
+                                          </div>
+                                          {ejercicios.map(ejercicio => (
+                                            <div
+                                              key={ejercicio.id}
+                                              className={`px-2 py-1 small ${ej.id === ejercicio.id ? 'bg-success' : ''}`}
+                                              style={{ 
+                                                cursor: 'pointer',
+                                                borderBottom: '1px solid #333'
+                                              }}
+                                              onClick={() => seleccionarEjercicio(dia, i, ejercicio)}
+                                            >
+                                              {ejercicio.nombre}
+                                            </div>
+                                          ))}
                                         </div>
-                                      ))}
-                                    </div>
-                                  ))
+                                      ))
+                                    )}
+                                  </div>
                                 )}
-                              </div>
-                            )}
+                              </>
+                            ) : null}
 
-                            {/* Selected exercise display */}
-                            {selectedExercise && (
-                              <div className="alert alert-success py-1 px-2 mb-0 small">
-                                ✓ {selectedExercise.nombre}
+                            {/* Selected exercise display - clickable to edit */}
+                            {selectedExercise && !isEditing && (
+                              <div 
+                                className="alert alert-success py-2 px-3 mb-0"
+                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                onClick={() => setEditingExercise(prev => ({ ...prev, [dropdownKey]: true }))}
+                                title="Haz clic para cambiar el ejercicio"
+                              >
+                                <strong>{selectedExercise.nombre}</strong>
                               </div>
                             )}
                           </div>
