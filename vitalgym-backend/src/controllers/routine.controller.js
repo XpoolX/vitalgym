@@ -1,5 +1,6 @@
 const { Routine, RoutineExercise, Exercise } = require('../models');
 const PDFDocument = require('pdfkit');
+const crypto = require('crypto');
 
 /**
  * Helper: formatea/normaliza series (siempre devuelve array de strings)
@@ -307,7 +308,6 @@ exports.generateShareToken = async (req, res) => {
     
     // Generate a unique token if it doesn't exist
     if (!rutina.shareToken) {
-      const crypto = require('crypto');
       const token = crypto.randomBytes(16).toString('hex');
       await rutina.update({ shareToken: token });
     }

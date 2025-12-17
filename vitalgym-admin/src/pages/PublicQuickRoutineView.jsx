@@ -44,7 +44,6 @@ export default function PublicQuickRoutineView() {
         setTimerSeconds(prev => {
           if (prev <= 1) {
             setTimerActive(false);
-            // Play a sound or notification when timer completes
             return 0;
           }
           return prev - 1;

@@ -15,7 +15,7 @@ router.put('/:id', controller.update);
 router.delete('/:id', controller.remove);
 router.get('/:id/pdf', controller.generatePDF);
 router.post('/:id/share', controller.generateShareToken);
-router.get('/:id', controller.getById); // ← esto usa el getById que debe estar exportado
+router.get('/:id', controller.getById);
 
 
 module.exports = router;

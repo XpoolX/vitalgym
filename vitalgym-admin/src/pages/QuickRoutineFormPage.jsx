@@ -115,7 +115,10 @@ export default function QuickRoutineFormPage() {
   };
 
   const seleccionarEjercicio = (dia, i, ejercicio) => {
-    if (ejerciciosPorDia[dia].some((e2, idx) => e2.id === ejercicio.id && idx !== i)) return;
+    if (ejerciciosPorDia[dia].some((e2, idx) => e2.id === ejercicio.id && idx !== i)) {
+      alert('Este ejercicio ya está añadido en este día. Por favor, selecciona otro ejercicio.');
+      return;
+    }
     actualizarCampo(dia, i, 'id', ejercicio.id);
     actualizarCampo(dia, i, 'ejercicioData', ejercicio);
   };
