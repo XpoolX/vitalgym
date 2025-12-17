@@ -159,16 +159,21 @@ exports.getById = async (req, res) => {
 exports.create = async (req, res) => {
   try {
     const { nombre, descripcion, dias, isQuickRoutine } = req.body;
+    console.log('Creating routine:', { nombre, descripcion, isQuickRoutine, diasCount: dias?.length });
+    
     const nuevaRutina = await Routine.create({ 
       nombre, 
       descripcion,
       isQuickRoutine: isQuickRoutine || false
     });
+    console.log('Routine created with ID:', nuevaRutina.id);
 
     if (Array.isArray(dias)) {
+      console.log('Processing dias array:', dias.length, 'days');
       for (const diaData of dias) {
+        console.log(`Processing day ${diaData.dia} with ${diaData.ejercicios?.length || 0} exercises`);
         for (const ej of diaData.ejercicios || []) {
-          await RoutineExercise.create({
+          const exerciseData = {
             routineId: nuevaRutina.id,
             exerciseId: ej.exerciseId,
             dia: diaData.dia,
@@ -176,9 +181,12 @@ exports.create = async (req, res) => {
             repeticiones: ej.repeticiones ?? null,
             descansoSegundos: ej.descansoSegundos ?? null,
             notas: ej.notas ?? null
-          });
+          };
+          console.log('Creating RoutineExercise:', exerciseData);
+          await RoutineExercise.create(exerciseData);
         }
       }
+      console.log('All exercises created successfully');
     }
 
     res.status(201).json({ message: 'Rutina creada', id: nuevaRutina.id });
