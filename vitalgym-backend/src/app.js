@@ -38,11 +38,11 @@ const routineRoutes = require('./routes/routine.routes');
 app.use('/api/routines', routineRoutes);
 
 // Protected admin routes
-app.use('/auth', require('./routes/auth.routes'));
-app.use('/admin/users', require('./routes/user.routes'));
-app.use('/admin/routines', routineRoutes); // Reuse the same router
-app.use('/client', require('./routes/client.routes'));
-app.use('/admin/exercises', exerciseRoutes);
+app.use('/api/auth', require('./routes/auth.routes'));
+app.use('/api/admin/users', require('./routes/user.routes'));
+app.use('/api/admin/routines', routineRoutes); // Reuse the same router
+app.use('/api/client', require('./routes/client.routes'));
+app.use('/api/admin/exercises', exerciseRoutes);
 
 module.exports = app;
 
