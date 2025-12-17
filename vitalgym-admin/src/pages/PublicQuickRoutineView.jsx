@@ -16,7 +16,22 @@ export default function PublicQuickRoutineView() {
   useEffect(() => {
     const fetchRoutine = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        // Determine API URL based on environment
+        let apiUrl = import.meta.env.VITE_API_URL;
+        
+        // If not set, try to infer from window location
+        if (!apiUrl) {
+          const { protocol, hostname } = window.location;
+          // If we're on production, assume backend is on same domain
+          if (hostname === 'vitalgym.fit' || hostname === 'www.vitalgym.fit') {
+            apiUrl = `${protocol}//${hostname}`;
+          } else {
+            // Default to localhost for development
+            apiUrl = 'http://localhost:5000';
+          }
+        }
+        
+        console.log('Fetching routine from:', `${apiUrl}/api/routines/shared/${token}`);
         const res = await axios.get(`${apiUrl}/api/routines/shared/${token}`);
         setRutina(res.data);
         
@@ -27,6 +42,11 @@ export default function PublicQuickRoutineView() {
         }
       } catch (err) {
         console.error('Error loading routine:', err);
+        console.error('Error details:', {
+          message: err.message,
+          response: err.response?.data,
+          status: err.response?.status
+        });
         setError('No se pudo cargar la rutina. Verifica el enlace.');
       } finally {
         setLoading(false);

@@ -325,10 +325,21 @@ exports.generateShareToken = async (req, res) => {
 exports.getByShareToken = async (req, res) => {
   try {
     const { token } = req.params;
+    console.log('Fetching routine with token:', token);
+    
     const rutina = await Routine.findOne({ where: { shareToken: token } });
     
-    if (!rutina) return res.status(404).json({ message: 'Rutina no encontrada' });
-    if (!rutina.isQuickRoutine) return res.status(400).json({ message: 'Rutina no válida' });
+    if (!rutina) {
+      console.log('Routine not found for token:', token);
+      return res.status(404).json({ message: 'Rutina no encontrada', token });
+    }
+    
+    console.log('Found routine:', { id: rutina.id, nombre: rutina.nombre, isQuickRoutine: rutina.isQuickRoutine });
+    
+    if (!rutina.isQuickRoutine) {
+      console.log('Routine is not a quick routine');
+      return res.status(400).json({ message: 'Rutina no válida' });
+    }
     
     // Get exercises without image URLs for quick routines
     const ejercicios = await RoutineExercise.findAll({
@@ -340,6 +351,8 @@ exports.getByShareToken = async (req, res) => {
       }],
       order: [['dia', 'ASC'], ['id', 'ASC']]
     });
+    
+    console.log('Found exercises:', ejercicios.length);
     
     const dias = {};
     ejercicios.forEach(ej => {
@@ -361,6 +374,8 @@ exports.getByShareToken = async (req, res) => {
     const diasArray = Object.keys(dias)
       .map(dia => ({ dia: parseInt(dia, 10), ejercicios: dias[dia] }))
       .sort((a, b) => a.dia - b.dia);
+    
+    console.log('Returning routine with', diasArray.length, 'days');
     
     res.json({
       id: rutina.id,
