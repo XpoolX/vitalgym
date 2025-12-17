@@ -157,8 +157,12 @@ exports.getById = async (req, res) => {
  */
 exports.create = async (req, res) => {
   try {
-    const { nombre, descripcion, dias } = req.body;
-    const nuevaRutina = await Routine.create({ nombre, descripcion });
+    const { nombre, descripcion, dias, isQuickRoutine } = req.body;
+    const nuevaRutina = await Routine.create({ 
+      nombre, 
+      descripcion,
+      isQuickRoutine: isQuickRoutine || false
+    });
 
     if (Array.isArray(dias)) {
       for (const diaData of dias) {

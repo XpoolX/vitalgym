@@ -10,10 +10,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Rutas
+// Public routes (no authentication)
+const routineRoutes = require('./routes/routine.routes');
+app.use('/api/routines', routineRoutes);
+
+// Protected admin routes
 app.use('/auth', require('./routes/auth.routes'));
 app.use('/admin/users', require('./routes/user.routes'));
-app.use('/admin/routines', require('./routes/routine.routes'));
+app.use('/admin/routines', routineRoutes); // Reuse the same router
 app.use('/client', require('./routes/client.routes'));
 app.use('/admin/exercises', exerciseRoutes);
 
