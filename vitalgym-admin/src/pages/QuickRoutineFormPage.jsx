@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api/axios';
 import NavBar from '../components/NavBar';
 import PageHeader from '../components/PageHeader';
@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faMinus, faTrash, faFloppyDisk, faFire, faCalendarDays, faFileLines, faClock, faBolt } from '@fortawesome/free-solid-svg-icons';
 
 export default function QuickRoutineFormPage() {
+  const { id } = useParams(); // Get routine ID if editing
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [ejerciciosBase, setEjerciciosBase] = useState([]);
@@ -15,7 +16,48 @@ export default function QuickRoutineFormPage() {
   const [grupoMuscularFilter, setGrupoMuscularFilter] = useState({});
   const [searchTerms, setSearchTerms] = useState({});
   const [editingExercise, setEditingExercise] = useState({}); // Track which exercise is being edited
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Load existing routine if editing
+  useEffect(() => {
+    if (id) {
+      const fetchRoutine = async () => {
+        try {
+          setLoading(true);
+          const res = await api.get(`/admin/routines/${id}`);
+          const routine = res.data;
+          
+          setNombre(routine.nombre || '');
+          setDescripcion(routine.descripcion || '');
+          
+          // Convert routine days to ejerciciosPorDia format
+          if (routine.dias && routine.dias.length > 0) {
+            const maxDia = Math.max(...routine.dias.map(d => d.dia));
+            setDias(maxDia);
+            
+            const ejerciciosPorDiaData = {};
+            routine.dias.forEach(diaData => {
+              ejerciciosPorDiaData[diaData.dia] = diaData.ejercicios.map(ej => ({
+                id: ej.exerciseId || ej.id,
+                ejercicioData: ej.Exercise || { id: ej.exerciseId, nombre: ej.nombre },
+                series: Array.isArray(ej.series) ? ej.series : (ej.series ? [ej.series] : [10, 10, 10, 10]),
+                descansoSegundos: ej.descansoSegundos || 60,
+                notas: ej.notas || ''
+              }));
+            });
+            setEjerciciosPorDia(ejerciciosPorDiaData);
+          }
+        } catch (err) {
+          console.error('Error loading routine:', err);
+          alert('Error al cargar la rutina');
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchRoutine();
+    }
+  }, [id]);
 
   useEffect(() => {
     const fetchEjercicios = async () => {
@@ -213,8 +255,16 @@ export default function QuickRoutineFormPage() {
     }
 
     try {
-      const response = await api.post('/admin/routines', payload);
-      console.log('Response from server:', response.data);
+      let response;
+      if (id) {
+        // Update existing routine
+        response = await api.put(`/admin/routines/${id}`, payload);
+        console.log('Response from server (update):', response.data);
+      } else {
+        // Create new routine
+        response = await api.post('/admin/routines', payload);
+        console.log('Response from server (create):', response.data);
+      }
       navigate('/rutinas');
     } catch (err) {
       console.error('========== ERROR SAVING ROUTINE ==========');
@@ -247,17 +297,25 @@ export default function QuickRoutineFormPage() {
     <div className="page-container" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, black 50%, crimson 50%)', paddingTop: '150px' }}>
       <NavBar />
       <div className="page-content" style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px' }}>
-        <PageHeader 
-          icon={faBolt} 
-          title="Crear Rutina Rápida" 
-          subtitle="Crea una rutina simple y compártela fácilmente"
-        />
+        {loading ? (
+          <div className="text-center p-5">
+            <div className="spinner-border text-warning" role="status">
+              <span className="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+        ) : (
+          <>
+            <PageHeader 
+              icon={faBolt} 
+              title={id ? "Editar Rutina Rápida" : "Crear Rutina Rápida"} 
+              subtitle={id ? "Modifica tu rutina simple" : "Crea una rutina simple y compártela fácilmente"}
+            />
 
-        <div className="card shadow-lg border-warning" style={{ borderRadius: '16px', overflow: 'hidden' }}>
-          <div className="card-header bg-dark text-white" style={{ padding: '20px 24px', borderBottom: '3px solid #ffc107' }}>
-            <h5 className="mb-0">
-              <FontAwesomeIcon icon={faBolt} className="text-warning" /> Rutina Rápida (Solo Texto)
-            </h5>
+            <div className="card shadow-lg border-warning" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+              <div className="card-header bg-dark text-white" style={{ padding: '20px 24px', borderBottom: '3px solid #ffc107' }}>
+                <h5 className="mb-0">
+                  <FontAwesomeIcon icon={faBolt} className="text-warning" /> Rutina Rápida (Solo Texto)
+                </h5>
             <small className="text-muted">Diseño simple, compartible sin necesidad de registro</small>
           </div>
 
@@ -481,10 +539,12 @@ export default function QuickRoutineFormPage() {
             })}
 
             <button type="button" className="btn btn-warning btn-lg mt-4 w-100" onClick={guardarRutina} style={{ borderRadius: '12px', fontWeight: 'bold' }}>
-              <FontAwesomeIcon icon={faFloppyDisk} /> Guardar Rutina Rápida
+              <FontAwesomeIcon icon={faFloppyDisk} /> {id ? "Actualizar Rutina Rápida" : "Guardar Rutina Rápida"}
             </button>
           </div>
         </div>
+        </>
+        )}
       </div>
     </div>
   );

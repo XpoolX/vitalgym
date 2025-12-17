@@ -29,6 +29,7 @@ function App() {
         <Route path="/ejercicios/crear" element={<ExerciseFormPage />} />
         <Route path="/asignar" element={<AssignRoutinePage />} />
         <Route path="/rutinas/:id/editar" element={<RoutineEditPage />} />
+        <Route path="/rutinas/:id/editar-rapida" element={<QuickRoutineFormPage />} />
         <Route path="/ejercicios/:id/editar" element={<ExerciseEditPage />} />
         <Route path="/rutinas/preview-pdf" element={<PreviewPDFPage />} />
         <Route path="/rutinas/:id/preview-pdf" element={<PreviewPDFPage />} />

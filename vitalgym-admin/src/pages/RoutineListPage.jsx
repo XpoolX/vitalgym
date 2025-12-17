@@ -88,7 +88,11 @@ export default function RoutineListPage() {
                     <p className="card-text text-white">{rutina.descripcion}</p>
                   </div>
                   <div className="card-footer bg-black border-top-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <Link to={`/rutinas/${rutina.id}/editar`} className="btn btn-primary btn-sm" title="Editar rutina">
+                    <Link 
+                      to={rutina.isQuickRoutine ? `/rutinas/${rutina.id}/editar-rapida` : `/rutinas/${rutina.id}/editar`} 
+                      className="btn btn-primary btn-sm" 
+                      title="Editar rutina"
+                    >
                       <FontAwesomeIcon icon={faPenToSquareRegular} />
                     </Link>
 
