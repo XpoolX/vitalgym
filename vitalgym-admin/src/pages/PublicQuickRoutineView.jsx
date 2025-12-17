@@ -16,22 +16,47 @@ export default function PublicQuickRoutineView() {
   useEffect(() => {
     const fetchRoutine = async () => {
       try {
-        // Determine API URL based on environment
-        let apiUrl = import.meta.env.VITE_API_URL;
+        // Determine API URL based on multiple sources (priority order):
+        // 1. Runtime config (can be edited after build)
+        // 2. Build-time environment variable
+        // 3. Auto-detection based on hostname
         
-        // If not set, try to infer from window location
+        let apiUrl = null;
+        
+        // Check runtime config first (window.VITALGYM_CONFIG)
+        if (window.VITALGYM_CONFIG && window.VITALGYM_CONFIG.API_URL) {
+          apiUrl = window.VITALGYM_CONFIG.API_URL;
+          console.log('Using runtime config API URL:', apiUrl);
+        }
+        
+        // Check build-time env variable (only if runtime config not set)
+        if (!apiUrl && import.meta.env.VITE_API_URL && !import.meta.env.VITE_API_URL.includes('localhost')) {
+          apiUrl = import.meta.env.VITE_API_URL;
+          console.log('Using build-time env API URL:', apiUrl);
+        }
+        
+        // Auto-detect based on hostname (fallback)
         if (!apiUrl) {
-          const { protocol, hostname } = window.location;
-          // If we're on production, assume backend is on same domain
+          const { protocol, hostname, port } = window.location;
+          
           if (hostname === 'vitalgym.fit' || hostname === 'www.vitalgym.fit') {
+            // Production: try same domain first, then fallback to port 5000
             apiUrl = `${protocol}//${hostname}`;
-          } else {
-            // Default to localhost for development
+            console.log('Production domain detected, trying same domain:', apiUrl);
+          } else if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            // Development: backend on port 5000
             apiUrl = 'http://localhost:5000';
+            console.log('Development domain detected, using:', apiUrl);
+          } else {
+            // Other domains: use same protocol and hostname
+            apiUrl = `${protocol}//${hostname}${port ? ':' + port : ''}`;
+            console.log('Custom domain detected, using:', apiUrl);
           }
         }
         
+        console.log('Final API URL:', apiUrl);
         console.log('Fetching routine from:', `${apiUrl}/api/routines/shared/${token}`);
+        
         const res = await axios.get(`${apiUrl}/api/routines/shared/${token}`);
         setRutina(res.data);
         
@@ -45,7 +70,8 @@ export default function PublicQuickRoutineView() {
         console.error('Error details:', {
           message: err.message,
           response: err.response?.data,
-          status: err.response?.status
+          status: err.response?.status,
+          url: err.config?.url
         });
         setError('No se pudo cargar la rutina. Verifica el enlace.');
       } finally {
