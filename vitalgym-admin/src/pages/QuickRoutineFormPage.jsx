@@ -131,9 +131,20 @@ export default function QuickRoutineFormPage() {
   };
 
   const guardarRutina = async () => {
+    console.log('========== PREPARING TO SAVE QUICK ROUTINE ==========');
+    console.log('Raw ejerciciosPorDia state:', JSON.stringify(ejerciciosPorDia, null, 2));
+    console.log('Nombre:', nombre);
+    console.log('Descripcion:', descripcion);
+    
     const diasArray = Object.entries(ejerciciosPorDia).map(([dia, ejercicios]) => {
+      console.log(`Processing dia ${dia} with ${ejercicios?.length || 0} exercises`);
+      
       const ejerciciosClean = (ejercicios || [])
-        .filter(e => e.id)
+        .filter(e => {
+          const hasId = Boolean(e.id);
+          console.log(`Exercise in dia ${dia}:`, { id: e.id, hasId, ejercicioData: e.ejercicioData?.nombre });
+          return hasId;
+        })
         .map(e => {
           let normalizedSeries = [];
           if (Array.isArray(e.series)) {
@@ -149,19 +160,24 @@ export default function QuickRoutineFormPage() {
             normalizedSeries = [Number(e.repeticiones)];
           }
 
-          return {
+          const exercisePayload = {
             exerciseId: e.id,
             series: (normalizedSeries && normalizedSeries.length) ? normalizedSeries : null,
-            descansoSegundos: e.descansoSegundos,
-            notas: e.notas,
+            descansoSegundos: e.descansoSegundos || 60,
+            notas: e.notas || '',
           };
+          
+          console.log('Mapped exercise:', exercisePayload);
+          return exercisePayload;
         });
 
+      console.log(`Dia ${dia} has ${ejerciciosClean.length} clean exercises`);
+      
       return {
         dia: parseInt(dia, 10),
         ejercicios: ejerciciosClean
       };
-    });
+    }).filter(d => d.ejercicios && d.ejercicios.length > 0); // Only include days with exercises
 
     const payload = {
       nombre,
@@ -171,16 +187,29 @@ export default function QuickRoutineFormPage() {
     };
 
     console.log('========== SAVING QUICK ROUTINE ==========');
-    console.log('Payload:', JSON.stringify(payload, null, 2));
+    console.log('Final Payload:', JSON.stringify(payload, null, 2));
     console.log('Dias count:', diasArray.length);
-    console.log('EjerciciosPorDia state:', ejerciciosPorDia);
+    console.log('Total exercises:', diasArray.reduce((sum, d) => sum + d.ejercicios.length, 0));
+
+    if (!nombre || nombre.trim() === '') {
+      alert('Por favor, introduce un nombre para la rutina');
+      return;
+    }
+
+    if (diasArray.length === 0 || diasArray.every(d => !d.ejercicios || d.ejercicios.length === 0)) {
+      alert('Por favor, añade al menos un ejercicio a la rutina');
+      return;
+    }
 
     try {
-      await api.post('/admin/routines', payload);
+      const response = await api.post('/admin/routines', payload);
+      console.log('Response from server:', response.data);
       navigate('/rutinas');
     } catch (err) {
+      console.error('========== ERROR SAVING ROUTINE ==========');
       console.error('Error guardando rutina:', err);
       console.error('Error response:', err.response?.data);
+      console.error('Error message:', err.message);
       alert('Error al guardar rutina. Mira la consola para más detalles.');
     }
   };
