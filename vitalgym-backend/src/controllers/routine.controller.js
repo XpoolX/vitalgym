@@ -289,3 +289,83 @@ exports.generatePDF = async (req, res) => {
     res.status(500).json({ error: 'Error generando PDF', details: err.message });
   }
 };
+
+/**
+ * Generate share token for quick routine
+ */
+exports.generateShareToken = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const rutina = await Routine.findByPk(id);
+    
+    if (!rutina) return res.status(404).json({ message: 'Rutina no encontrada' });
+    if (!rutina.isQuickRoutine) return res.status(400).json({ message: 'Solo se pueden compartir rutinas rápidas' });
+    
+    // Generate a unique token if it doesn't exist
+    if (!rutina.shareToken) {
+      const crypto = require('crypto');
+      const token = crypto.randomBytes(16).toString('hex');
+      await rutina.update({ shareToken: token });
+    }
+    
+    res.json({ shareToken: rutina.shareToken });
+  } catch (error) {
+    console.error('Error generating share token:', error);
+    res.status(500).json({ message: 'Error al generar token', error: error.message });
+  }
+};
+
+/**
+ * Get quick routine by share token (public, no auth)
+ */
+exports.getByShareToken = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const rutina = await Routine.findOne({ where: { shareToken: token } });
+    
+    if (!rutina) return res.status(404).json({ message: 'Rutina no encontrada' });
+    if (!rutina.isQuickRoutine) return res.status(400).json({ message: 'Rutina no válida' });
+    
+    // Get exercises without image URLs for quick routines
+    const ejercicios = await RoutineExercise.findAll({
+      where: { routineId: rutina.id },
+      include: [{ 
+        model: Exercise, 
+        as: 'Exercise', 
+        attributes: ['nombre', 'grupoMuscular', 'zonaCorporal']
+      }],
+      order: [['dia', 'ASC'], ['id', 'ASC']]
+    });
+    
+    const dias = {};
+    ejercicios.forEach(ej => {
+      const raw = ej.series;
+      const parsed = normalizeSeries(raw);
+      const finalSeries = (Array.isArray(parsed) && parsed.length) ? parsed : (ej.repeticiones ? [String(ej.repeticiones)] : []);
+      
+      if (!dias[ej.dia]) dias[ej.dia] = [];
+      dias[ej.dia].push({
+        exerciseId: ej.exerciseId,
+        nombre: ej.Exercise?.nombre || null,
+        grupoMuscular: ej.Exercise?.grupoMuscular || null,
+        series: finalSeries,
+        descansoSegundos: ej.descansoSegundos,
+        notas: ej.notas
+      });
+    });
+    
+    const diasArray = Object.keys(dias)
+      .map(dia => ({ dia: parseInt(dia, 10), ejercicios: dias[dia] }))
+      .sort((a, b) => a.dia - b.dia);
+    
+    res.json({
+      id: rutina.id,
+      nombre: rutina.nombre,
+      descripcion: rutina.descripcion,
+      dias: diasArray
+    });
+  } catch (error) {
+    console.error('Error al obtener rutina compartida:', error);
+    res.status(500).json({ message: 'Error al obtener rutina', error: error.message });
+  }
+};
