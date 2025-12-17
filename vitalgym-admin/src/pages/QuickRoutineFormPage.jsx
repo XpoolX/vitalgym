@@ -163,16 +163,24 @@ export default function QuickRoutineFormPage() {
       };
     });
 
+    const payload = {
+      nombre,
+      descripcion,
+      dias: diasArray,
+      isQuickRoutine: true
+    };
+
+    console.log('========== SAVING QUICK ROUTINE ==========');
+    console.log('Payload:', JSON.stringify(payload, null, 2));
+    console.log('Dias count:', diasArray.length);
+    console.log('EjerciciosPorDia state:', ejerciciosPorDia);
+
     try {
-      await api.post('/admin/routines', {
-        nombre,
-        descripcion,
-        dias: diasArray,
-        isQuickRoutine: true
-      });
+      await api.post('/admin/routines', payload);
       navigate('/rutinas');
     } catch (err) {
       console.error('Error guardando rutina:', err);
+      console.error('Error response:', err.response?.data);
       alert('Error al guardar rutina. Mira la consola para más detalles.');
     }
   };

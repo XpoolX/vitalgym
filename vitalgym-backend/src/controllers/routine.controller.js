@@ -159,7 +159,11 @@ exports.getById = async (req, res) => {
 exports.create = async (req, res) => {
   try {
     const { nombre, descripcion, dias, isQuickRoutine } = req.body;
+    console.log('========== CREATE ROUTINE REQUEST ==========');
+    console.log('Full request body:', JSON.stringify(req.body, null, 2));
     console.log('Creating routine:', { nombre, descripcion, isQuickRoutine, diasCount: dias?.length });
+    console.log('Dias is Array?', Array.isArray(dias));
+    console.log('Dias value:', dias);
     
     const nuevaRutina = await Routine.create({ 
       nombre, 
@@ -172,6 +176,7 @@ exports.create = async (req, res) => {
       console.log('Processing dias array:', dias.length, 'days');
       for (const diaData of dias) {
         console.log(`Processing day ${diaData.dia} with ${diaData.ejercicios?.length || 0} exercises`);
+        console.log('Day data:', JSON.stringify(diaData, null, 2));
         for (const ej of diaData.ejercicios || []) {
           const exerciseData = {
             routineId: nuevaRutina.id,
@@ -182,12 +187,15 @@ exports.create = async (req, res) => {
             descansoSegundos: ej.descansoSegundos ?? null,
             notas: ej.notas ?? null
           };
-          console.log('Creating RoutineExercise:', exerciseData);
+          console.log('Creating RoutineExercise:', JSON.stringify(exerciseData, null, 2));
           await RoutineExercise.create(exerciseData);
         }
       }
       console.log('All exercises created successfully');
+    } else {
+      console.log('WARNING: dias is not an array or is undefined!');
     }
+    console.log('========== END CREATE ROUTINE REQUEST ==========');
 
     res.status(201).json({ message: 'Rutina creada', id: nuevaRutina.id });
   } catch (error) {
