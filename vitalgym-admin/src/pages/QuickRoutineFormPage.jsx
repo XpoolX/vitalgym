@@ -141,11 +141,22 @@ export default function QuickRoutineFormPage() {
       
       const ejerciciosClean = (ejercicios || [])
         .filter(e => {
-          const hasId = Boolean(e.id);
-          console.log(`Exercise in dia ${dia}:`, { id: e.id, hasId, ejercicioData: e.ejercicioData?.nombre });
+          // The ID might be in e.id OR e.ejercicioData.id
+          const exerciseId = e.id || e.ejercicioData?.id;
+          const hasId = Boolean(exerciseId);
+          console.log(`Exercise in dia ${dia}:`, { 
+            topLevelId: e.id, 
+            dataId: e.ejercicioData?.id, 
+            finalId: exerciseId,
+            hasId, 
+            ejercicioData: e.ejercicioData?.nombre 
+          });
           return hasId;
         })
         .map(e => {
+          // Get the exercise ID from either location
+          const exerciseId = e.id || e.ejercicioData?.id;
+          
           let normalizedSeries = [];
           if (Array.isArray(e.series)) {
             normalizedSeries = e.series
@@ -161,7 +172,7 @@ export default function QuickRoutineFormPage() {
           }
 
           const exercisePayload = {
-            exerciseId: e.id,
+            exerciseId: exerciseId,
             series: (normalizedSeries && normalizedSeries.length) ? normalizedSeries : null,
             descansoSegundos: e.descansoSegundos || 60,
             notas: e.notas || '',
