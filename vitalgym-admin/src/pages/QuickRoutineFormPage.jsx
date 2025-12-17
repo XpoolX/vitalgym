@@ -4,7 +4,7 @@ import api from '../api/axios';
 import NavBar from '../components/NavBar';
 import PageHeader from '../components/PageHeader';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faMinus, faTrash, faFloppyDisk, faFire, faCalendarDays, faDumbbell, faClipboardList, faFileLines, faClock, faSearch, faBolt } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faMinus, faTrash, faFloppyDisk, faFire, faCalendarDays, faFileLines, faClock, faBolt } from '@fortawesome/free-solid-svg-icons';
 
 export default function QuickRoutineFormPage() {
   const [nombre, setNombre] = useState('');

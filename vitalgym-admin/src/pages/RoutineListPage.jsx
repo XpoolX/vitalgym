@@ -8,7 +8,6 @@ import { faPenToSquare as faPenToSquareRegular, faTrashCan as faTrashCanRegular,
 
 export default function RoutineListPage() {
   const [rutinas, setRutinas] = useState([]);
-  const [shareTokens, setShareTokens] = useState({});
 
   const fetchRutinas = async () => {
     const res = await api.get('/admin/routines');
@@ -34,7 +33,6 @@ export default function RoutineListPage() {
     try {
       const res = await api.post(`/admin/routines/${routineId}/share`);
       const token = res.data.shareToken;
-      setShareTokens(prev => ({ ...prev, [routineId]: token }));
       
       // Copy to clipboard
       const url = `${window.location.origin}/rutina/${token}`;

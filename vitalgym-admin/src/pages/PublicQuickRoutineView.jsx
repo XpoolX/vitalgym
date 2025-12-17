@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFire, faClock, faCheck, faPlay, faPause, faRotateRight } from '@fortawesome/free-solid-svg-icons';
+import { faFire, faClock, faCheck, faPause, faRotateRight } from '@fortawesome/free-solid-svg-icons';
 
 export default function PublicQuickRoutineView() {
   const { token } = useParams();
@@ -12,7 +12,6 @@ export default function PublicQuickRoutineView() {
   const [completedSets, setCompletedSets] = useState({});
   const [timerActive, setTimerActive] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
-  const [timerTarget, setTimerTarget] = useState(0);
 
   useEffect(() => {
     const fetchRoutine = async () => {
@@ -66,7 +65,6 @@ export default function PublicQuickRoutineView() {
       
       // Start rest timer
       if (descansoSegundos && descansoSegundos > 0) {
-        setTimerTarget(descansoSegundos);
         setTimerSeconds(descansoSegundos);
         setTimerActive(true);
       }
