@@ -4,7 +4,7 @@ import api from '../api/axios';
 import NavBar from '../components/NavBar';
 import PageHeader from '../components/PageHeader';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPenToSquare as faPenToSquareRegular, faTrashCan as faTrashCanRegular, faPlus, faClipboardList, faFilePdf } from '@fortawesome/free-solid-svg-icons';
+import { faPenToSquare as faPenToSquareRegular, faTrashCan as faTrashCanRegular, faPlus, faClipboardList, faFilePdf, faBolt, faShare } from '@fortawesome/free-solid-svg-icons';
 
 export default function RoutineListPage() {
   const [rutinas, setRutinas] = useState([]);
@@ -29,6 +29,21 @@ export default function RoutineListPage() {
     }
   };
 
+  const generarLinkCompartir = async (routineId) => {
+    try {
+      const res = await api.post(`/admin/routines/${routineId}/share`);
+      const token = res.data.shareToken;
+      
+      // Copy to clipboard
+      const url = `${window.location.origin}/rutina/${token}`;
+      await navigator.clipboard.writeText(url);
+      alert('¡Link copiado al portapapeles!\n\n' + url);
+    } catch (err) {
+      alert('Error al generar link de compartir');
+      console.error(err);
+    }
+  };
+
   return (
     <div className="page-container" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, black 50%, crimson 50%)', paddingTop: '150px' }}>
       <NavBar />
@@ -39,9 +54,12 @@ export default function RoutineListPage() {
           subtitle="Crea, edita y gestiona las rutinas personalizadas"
         />
 
-        <div className="mb-4 d-flex justify-content-start">
+        <div className="mb-4 d-flex justify-content-start gap-2">
           <Link to="/rutinas/crear" className="btn btn-success" style={{ padding: '12px 20px', borderRadius: '12px', fontWeight: '700' }}>
             <FontAwesomeIcon icon={faPlus} /> Crear nueva rutina
+          </Link>
+          <Link to="/rutinas/crear-rapida" className="btn btn-warning" style={{ padding: '12px 20px', borderRadius: '12px', fontWeight: '700' }}>
+            <FontAwesomeIcon icon={faBolt} /> Crear Rutina Rápida
           </Link>
         </div>
 
@@ -51,23 +69,52 @@ export default function RoutineListPage() {
           <div className="row">
             {rutinas.map((rutina) => (
               <div className="col-md-6 col-lg-4 mb-4" key={rutina.id}>
-                <div className="card h-100 shadow-sm" style={{border: '5px solid rgb(73, 0, 22)', backgroundColor: '#000', color: '#fff', borderRadius: '15px', boxShadow: '0 0 30px crimson' }}>
+                <div className="card h-100 shadow-sm" style={{
+                  border: rutina.isQuickRoutine ? '5px solid #ffc107' : '5px solid rgb(73, 0, 22)', 
+                  backgroundColor: '#000', 
+                  color: '#fff', 
+                  borderRadius: '15px', 
+                  boxShadow: rutina.isQuickRoutine ? '0 0 30px #ffc107' : '0 0 30px crimson'
+                }}>
                   <div className="card-body">
-                    <h5 className="card-title" style={{ fontWeight: 'bold' }}>{rutina.nombre}</h5>
+                    <div className="d-flex justify-content-between align-items-start mb-2">
+                      <h5 className="card-title" style={{ fontWeight: 'bold' }}>{rutina.nombre}</h5>
+                      {rutina.isQuickRoutine && (
+                        <span className="badge bg-warning text-dark">
+                          <FontAwesomeIcon icon={faBolt} /> Rápida
+                        </span>
+                      )}
+                    </div>
                     <p className="card-text text-white">{rutina.descripcion}</p>
                   </div>
-                  <div className="card-footer bg-black border-top-0 d-flex justify-content-between align-items-center">
-                    <Link to={`/rutinas/${rutina.id}/editar`} className="btn btn-primary btn-sm" title="Editar rutina">
+                  <div className="card-footer bg-black border-top-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <Link 
+                      to={rutina.isQuickRoutine ? `/rutinas/${rutina.id}/editar-rapida` : `/rutinas/${rutina.id}/editar`} 
+                      className="btn btn-primary btn-sm" 
+                      title="Editar rutina"
+                    >
                       <FontAwesomeIcon icon={faPenToSquareRegular} />
                     </Link>
 
-                    <Link
-                      to={`/rutinas/${rutina.id}/preview-pdf`}
-                      className="btn btn-warning btn-sm"
-                      title="Previsualizar y exportar PDF"
-                    >
-                      <FontAwesomeIcon icon={faFilePdf} /> PDF
-                    </Link>
+                    {!rutina.isQuickRoutine && (
+                      <Link
+                        to={`/rutinas/${rutina.id}/preview-pdf`}
+                        className="btn btn-warning btn-sm"
+                        title="Previsualizar y exportar PDF"
+                      >
+                        <FontAwesomeIcon icon={faFilePdf} /> PDF
+                      </Link>
+                    )}
+
+                    {rutina.isQuickRoutine && (
+                      <button
+                        className="btn btn-info btn-sm"
+                        onClick={() => generarLinkCompartir(rutina.id)}
+                        title="Compartir rutina"
+                      >
+                        <FontAwesomeIcon icon={faShare} /> Compartir
+                      </button>
+                    )}
 
                     <button
                       className="btn btn-danger btn-sm"

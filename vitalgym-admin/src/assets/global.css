@@ -79,3 +79,7 @@ label {
       color: #ddd!important;
     line-height: 1.6;
 }
+
+.text-muted {
+    color: #aaa !important;
+}

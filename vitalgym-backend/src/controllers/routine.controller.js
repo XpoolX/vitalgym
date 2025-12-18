@@ -1,5 +1,6 @@
 const { Routine, RoutineExercise, Exercise } = require('../models');
 const PDFDocument = require('pdfkit');
+const crypto = require('crypto');
 
 /**
  * Helper: formatea/normaliza series (siempre devuelve array de strings)
@@ -157,13 +158,27 @@ exports.getById = async (req, res) => {
  */
 exports.create = async (req, res) => {
   try {
-    const { nombre, descripcion, dias } = req.body;
-    const nuevaRutina = await Routine.create({ nombre, descripcion });
+    const { nombre, descripcion, dias, isQuickRoutine } = req.body;
+    console.log('========== CREATE ROUTINE REQUEST ==========');
+    console.log('Full request body:', JSON.stringify(req.body, null, 2));
+    console.log('Creating routine:', { nombre, descripcion, isQuickRoutine, diasCount: dias?.length });
+    console.log('Dias is Array?', Array.isArray(dias));
+    console.log('Dias value:', dias);
+    
+    const nuevaRutina = await Routine.create({ 
+      nombre, 
+      descripcion,
+      isQuickRoutine: isQuickRoutine || false
+    });
+    console.log('Routine created with ID:', nuevaRutina.id);
 
     if (Array.isArray(dias)) {
+      console.log('Processing dias array:', dias.length, 'days');
       for (const diaData of dias) {
+        console.log(`Processing day ${diaData.dia} with ${diaData.ejercicios?.length || 0} exercises`);
+        console.log('Day data:', JSON.stringify(diaData, null, 2));
         for (const ej of diaData.ejercicios || []) {
-          await RoutineExercise.create({
+          const exerciseData = {
             routineId: nuevaRutina.id,
             exerciseId: ej.exerciseId,
             dia: diaData.dia,
@@ -171,10 +186,16 @@ exports.create = async (req, res) => {
             repeticiones: ej.repeticiones ?? null,
             descansoSegundos: ej.descansoSegundos ?? null,
             notas: ej.notas ?? null
-          });
+          };
+          console.log('Creating RoutineExercise:', JSON.stringify(exerciseData, null, 2));
+          await RoutineExercise.create(exerciseData);
         }
       }
+      console.log('All exercises created successfully');
+    } else {
+      console.log('WARNING: dias is not an array or is undefined!');
     }
+    console.log('========== END CREATE ROUTINE REQUEST ==========');
 
     res.status(201).json({ message: 'Rutina creada', id: nuevaRutina.id });
   } catch (error) {
@@ -287,5 +308,99 @@ exports.generatePDF = async (req, res) => {
   } catch (err) {
     console.error('Error generando PDF:', err);
     res.status(500).json({ error: 'Error generando PDF', details: err.message });
+  }
+};
+
+/**
+ * Generate share token for quick routine
+ */
+exports.generateShareToken = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const rutina = await Routine.findByPk(id);
+    
+    if (!rutina) return res.status(404).json({ message: 'Rutina no encontrada' });
+    if (!rutina.isQuickRoutine) return res.status(400).json({ message: 'Solo se pueden compartir rutinas rápidas' });
+    
+    // Generate a unique token if it doesn't exist
+    if (!rutina.shareToken) {
+      const token = crypto.randomBytes(16).toString('hex');
+      await rutina.update({ shareToken: token });
+    }
+    
+    res.json({ shareToken: rutina.shareToken });
+  } catch (error) {
+    console.error('Error generating share token:', error);
+    res.status(500).json({ message: 'Error al generar token', error: error.message });
+  }
+};
+
+/**
+ * Get quick routine by share token (public, no auth)
+ */
+exports.getByShareToken = async (req, res) => {
+  try {
+    const { token } = req.params;
+    console.log('Fetching routine with token:', token);
+    
+    const rutina = await Routine.findOne({ where: { shareToken: token } });
+    
+    if (!rutina) {
+      console.log('Routine not found for token:', token);
+      return res.status(404).json({ message: 'Rutina no encontrada', token });
+    }
+    
+    console.log('Found routine:', { id: rutina.id, nombre: rutina.nombre, isQuickRoutine: rutina.isQuickRoutine });
+    
+    if (!rutina.isQuickRoutine) {
+      console.log('Routine is not a quick routine');
+      return res.status(400).json({ message: 'Rutina no válida' });
+    }
+    
+    // Get exercises without image URLs for quick routines
+    const ejercicios = await RoutineExercise.findAll({
+      where: { routineId: rutina.id },
+      include: [{ 
+        model: Exercise, 
+        as: 'Exercise', 
+        attributes: ['nombre', 'grupoMuscular', 'zonaCorporal']
+      }],
+      order: [['dia', 'ASC'], ['id', 'ASC']]
+    });
+    
+    console.log('Found exercises:', ejercicios.length);
+    
+    const dias = {};
+    ejercicios.forEach(ej => {
+      const raw = ej.series;
+      const parsed = normalizeSeries(raw);
+      const finalSeries = (Array.isArray(parsed) && parsed.length) ? parsed : (ej.repeticiones ? [String(ej.repeticiones)] : []);
+      
+      if (!dias[ej.dia]) dias[ej.dia] = [];
+      dias[ej.dia].push({
+        exerciseId: ej.exerciseId,
+        nombre: ej.Exercise?.nombre || null,
+        grupoMuscular: ej.Exercise?.grupoMuscular || null,
+        series: finalSeries,
+        descansoSegundos: ej.descansoSegundos,
+        notas: ej.notas
+      });
+    });
+    
+    const diasArray = Object.keys(dias)
+      .map(dia => ({ dia: parseInt(dia, 10), ejercicios: dias[dia] }))
+      .sort((a, b) => a.dia - b.dia);
+    
+    console.log('Returning routine with', diasArray.length, 'days');
+    
+    res.json({
+      id: rutina.id,
+      nombre: rutina.nombre,
+      descripcion: rutina.descripcion,
+      dias: diasArray
+    });
+  } catch (error) {
+    console.error('Error al obtener rutina compartida:', error);
+    res.status(500).json({ message: 'Error al obtener rutina', error: error.message });
   }
 };
