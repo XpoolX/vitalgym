@@ -10,21 +10,60 @@ export default function ExerciseFormPage() {
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [imagen, setImagen] = useState(null);
-  const [video, setVideo] = useState(null);
+  const [imagenPreview, setImagenPreview] = useState(null);
+  const [videoUrl, setVideoUrl] = useState('');
 
   // Nuevos campos solicitados
   const [zonaCorporal, setZonaCorporal] = useState('');
   const [grupoMuscular, setGrupoMuscular] = useState('');
+  const [customZona, setCustomZona] = useState('');
+  const [customGrupo, setCustomGrupo] = useState('');
   const [equipo, setEquipo] = useState('');
   const [nivel, setNivel] = useState('principiante');
   const [descripcionCorta, setDescripcionCorta] = useState('');
   const [instrucciones, setInstrucciones] = useState('');
   const [consejos, setConsejos] = useState('');
 
+  // State for custom zones and disabled base zones
+  const [zonasPersonalizadas, setZonasPersonalizadas] = useState([]);
+  const [zonasDeshabilitadas, setZonasDeshabilitadas] = useState([]);
+
   const navigate = useNavigate();
 
-  // Opciones para desplegables
-  const zonas = [
+  // Load custom zones and disabled zones from localStorage
+  useEffect(() => {
+    const savedCustom = localStorage.getItem('zonasPersonalizadas');
+    if (savedCustom) {
+      try {
+        setZonasPersonalizadas(JSON.parse(savedCustom));
+      } catch (e) {
+        console.error('Error loading custom zones:', e);
+      }
+    }
+    
+    const savedDisabled = localStorage.getItem('zonasDeshabilitadas');
+    if (savedDisabled) {
+      try {
+        setZonasDeshabilitadas(JSON.parse(savedDisabled));
+      } catch (e) {
+        console.error('Error loading disabled zones:', e);
+      }
+    }
+  }, []);
+
+  // Image preview effect
+  useEffect(() => {
+    if (imagen) {
+      const url = URL.createObjectURL(imagen);
+      setImagenPreview(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setImagenPreview(null);
+    }
+  }, [imagen]);
+
+  // Opciones para desplegables con zonas personalizadas
+  const zonasBase = [
     { value: '', label: 'Selecciona zona corporal' },
     { value: 'pecho', label: 'Pecho' },
     { value: 'espalda', label: 'Espalda' },
@@ -33,6 +72,21 @@ export default function ExerciseFormPage() {
     { value: 'brazos', label: 'Brazos' },
     { value: 'abdomen', label: 'Abdomen' },
     { value: 'gluteos', label: 'Glúteos' },
+  ];
+
+  // Filter out disabled base zones and add custom zones
+  const zonasBaseFiltradas = zonasBase.filter(z => z.value === '' || !zonasDeshabilitadas.includes(z.value));
+  
+  const zonas = [
+    ...zonasBaseFiltradas,
+    ...zonasPersonalizadas.map(z => ({ value: z, label: z })),
+    { value: 'otro', label: 'Otro (añadir nueva)' }
+  ];
+
+  // Get all zones for display in management UI (excluding empty option and "otro")
+  const todasLasZonas = [
+    ...zonasBase.filter(z => z.value !== '' && !zonasDeshabilitadas.includes(z.value)),
+    ...zonasPersonalizadas.map(z => ({ value: z, label: z, isCustom: true }))
   ];
 
   const gruposByZona = {
@@ -60,7 +114,7 @@ export default function ExerciseFormPage() {
 
   // Actualiza las opciones de grupo muscular cuando cambia la zona corporal
   useEffect(() => {
-    if (!zonaCorporal) {
+    if (!zonaCorporal || zonaCorporal === 'otro') {
       setGrupoMuscular('');
       return;
     }
@@ -76,22 +130,72 @@ export default function ExerciseFormPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zonaCorporal]);
 
+  const handleAddCustomZone = () => {
+    if (customZona.trim() && !zonasPersonalizadas.includes(customZona.trim())) {
+      const newZonas = [...zonasPersonalizadas, customZona.trim()];
+      setZonasPersonalizadas(newZonas);
+      localStorage.setItem('zonasPersonalizadas', JSON.stringify(newZonas));
+      setZonaCorporal(customZona.trim());
+      setCustomZona('');
+    }
+  };
+
+  const handleRemoveCustomZone = (zonaToRemove) => {
+    if (window.confirm(`¿Estás seguro de que quieres eliminar la zona "${zonaToRemove}"?`)) {
+      // Check if it's a custom zone
+      if (zonasPersonalizadas.includes(zonaToRemove)) {
+        // Remove from custom zones
+        const newZonas = zonasPersonalizadas.filter(z => z !== zonaToRemove);
+        setZonasPersonalizadas(newZonas);
+        localStorage.setItem('zonasPersonalizadas', JSON.stringify(newZonas));
+      } else {
+        // It's a base zone, add to disabled list
+        const newDisabled = [...zonasDeshabilitadas, zonaToRemove];
+        setZonasDeshabilitadas(newDisabled);
+        localStorage.setItem('zonasDeshabilitadas', JSON.stringify(newDisabled));
+      }
+      
+      // If the removed zone was selected, clear selection
+      if (zonaCorporal === zonaToRemove) {
+        setZonaCorporal('');
+      }
+    }
+  };
+
   const guardar = async () => {
+    // Determine the final zone value
+    let finalZona = zonaCorporal;
+    if (zonaCorporal === 'otro' && customZona.trim()) {
+      finalZona = customZona.trim();
+      // Also add to custom zones if not already added
+      if (!zonasPersonalizadas.includes(finalZona)) {
+        const newZonas = [...zonasPersonalizadas, finalZona];
+        setZonasPersonalizadas(newZonas);
+        localStorage.setItem('zonasPersonalizadas', JSON.stringify(newZonas));
+      }
+    }
+
+    // Determine the final muscle group
+    let finalGrupo = grupoMuscular;
+    if (grupoMuscular === 'otro' && customGrupo.trim()) {
+      finalGrupo = customGrupo.trim();
+    }
+
     const formData = new FormData();
     formData.append('nombre', nombre);
     formData.append('descripcion', descripcion);
 
     // Campos nuevos (snake_case)
-    formData.append('zona_corporal', zonaCorporal);
-    formData.append('grupo_muscular', grupoMuscular);
+    formData.append('zona_corporal', finalZona);
+    formData.append('grupo_muscular', finalGrupo);
     formData.append('equipo', equipo);
     formData.append('nivel', nivel);
     formData.append('descripcion_corta', descripcionCorta);
     formData.append('instrucciones', instrucciones);
     formData.append('consejos', consejos);
+    formData.append('video_url', videoUrl); // YouTube URL instead of file
 
     if (imagen) formData.append('imagen', imagen);
-    if (video) formData.append('video', video);
 
     try {
       await api.post('/admin/exercises', formData, {
@@ -105,6 +209,16 @@ export default function ExerciseFormPage() {
       console.error(err);
     }
   };
+
+  // Extract YouTube video ID from URL
+  const getYouTubeVideoId = (url) => {
+    if (!url) return null;
+    const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[7].length === 11) ? match[7] : null;
+  };
+
+  const youtubeVideoId = getYouTubeVideoId(videoUrl);
 
   return (
     <div className="page-container" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, black 50%, crimson 50%)', paddingTop: '150px' }}>
@@ -162,6 +276,49 @@ export default function ExerciseFormPage() {
                   </option>
                 ))}
               </select>
+              
+              {zonaCorporal === 'otro' && (
+                <div className="mt-2 d-flex gap-2">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Nombre de la nueva zona corporal"
+                    value={customZona}
+                    onChange={(e) => setCustomZona(e.target.value)}
+                  />
+                  <button 
+                    type="button" 
+                    className="btn btn-primary"
+                    onClick={handleAddCustomZone}
+                  >
+                    Añadir
+                  </button>
+                </div>
+              )}
+              
+              {todasLasZonas.length > 0 && (
+                <div className="mt-2">
+                  <small className="text-muted d-block mb-1">Zonas disponibles (haz clic en × para ocultar):</small>
+                  <div className="d-flex flex-wrap gap-2">
+                    {todasLasZonas.map((zona) => (
+                      <span 
+                        key={zona.value} 
+                        className={`badge ${zona.isCustom ? 'bg-primary' : 'bg-secondary'} d-flex align-items-center gap-1`}
+                        style={{ fontSize: '0.85rem', padding: '0.35rem 0.5rem' }}
+                      >
+                        {zona.label}
+                        <button
+                          type="button"
+                          className="btn-close btn-close-white"
+                          style={{ fontSize: '0.6rem', marginLeft: '4px' }}
+                          onClick={() => handleRemoveCustomZone(zona.value)}
+                          aria-label="Eliminar"
+                        ></button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="col-md-4 mb-3">
@@ -169,10 +326,10 @@ export default function ExerciseFormPage() {
                 className="form-select"
                 value={grupoMuscular}
                 onChange={(e) => setGrupoMuscular(e.target.value)}
-                disabled={!zonaCorporal}
+                disabled={!zonaCorporal || zonaCorporal === 'otro'}
               >
-                <option value="">{zonaCorporal ? 'Selecciona grupo muscular' : 'Selecciona zona primero'}</option>
-                {zonaCorporal &&
+                <option value="">{zonaCorporal && zonaCorporal !== 'otro' ? 'Selecciona grupo muscular' : 'Selecciona zona primero'}</option>
+                {zonaCorporal && zonaCorporal !== 'otro' &&
                   (gruposByZona[zonaCorporal] || []).map((g) => (
                     <option key={g} value={g}>
                       {g}
@@ -180,6 +337,18 @@ export default function ExerciseFormPage() {
                   ))}
                 <option value="otro">Otro</option>
               </select>
+              
+              {grupoMuscular === 'otro' && (
+                <div className="mt-2">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Nombre del grupo muscular"
+                    value={customGrupo}
+                    onChange={(e) => setCustomGrupo(e.target.value)}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="col-md-4 mb-3">
@@ -244,16 +413,44 @@ export default function ExerciseFormPage() {
               accept="image/*"
               onChange={(e) => setImagen(e.target.files[0])}
             />
+            
+            {imagenPreview && (
+              <div className="mt-3">
+                <p className="text-muted small">Vista previa:</p>
+                <img 
+                  src={imagenPreview} 
+                  alt="Preview" 
+                  className="img-fluid rounded border" 
+                  style={{ maxHeight: '200px', objectFit: 'cover' }}
+                />
+              </div>
+            )}
           </div>
 
           <div className="mb-4">
-            <label className="form-label"><FontAwesomeIcon icon={faVideo} /> Vídeo (archivo)</label>
+            <label className="form-label"><FontAwesomeIcon icon={faVideo} /> Vídeo de YouTube (URL)</label>
             <input
-              type="file"
+              type="text"
               className="form-control"
-              accept="video/*"
-              onChange={(e) => setVideo(e.target.files[0])}
+              placeholder="https://www.youtube.com/watch?v=..."
+              value={videoUrl}
+              onChange={(e) => setVideoUrl(e.target.value)}
             />
+            
+            {youtubeVideoId && (
+              <div className="mt-3">
+                <p className="text-muted small">Vista previa:</p>
+                <div className="ratio ratio-16x9" style={{ maxWidth: '560px' }}>
+                  <iframe
+                    src={`https://www.youtube.com/embed/${youtubeVideoId}`}
+                    title="YouTube video preview"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                </div>
+              </div>
+            )}
           </div>
 
           <button className="btn btn-success" onClick={guardar} style={{ borderRadius: '12px', padding: '12px 24px' }}>

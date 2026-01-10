@@ -16,6 +16,7 @@ export default function QuickRoutineFormPage() {
   const [grupoMuscularFilter, setGrupoMuscularFilter] = useState({});
   const [searchTerms, setSearchTerms] = useState({});
   const [editingExercise, setEditingExercise] = useState({}); // Track which exercise is being edited
+  const [includeImages, setIncludeImages] = useState(true); // Option to include exercise images
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -30,6 +31,9 @@ export default function QuickRoutineFormPage() {
           
           setNombre(routine.nombre || '');
           setDescripcion(routine.descripcion || '');
+          
+          // Load includeImages setting (default to true if not set)
+          setIncludeImages(routine.includeImages !== undefined ? routine.includeImages : true);
           
           // Convert routine days to ejerciciosPorDia format
           if (routine.dias && routine.dias.length > 0) {
@@ -236,7 +240,8 @@ export default function QuickRoutineFormPage() {
       nombre,
       descripcion,
       dias: diasArray,
-      isQuickRoutine: true
+      isQuickRoutine: true,
+      includeImages: includeImages
     };
 
     console.log('========== SAVING QUICK ROUTINE ==========');
@@ -343,6 +348,24 @@ export default function QuickRoutineFormPage() {
                 onChange={(e) => setDescripcion(e.target.value)}
                 rows={2}
               />
+            </div>
+
+            <div className="mb-3">
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id="includeImagesCheck"
+                  checked={includeImages}
+                  onChange={(e) => setIncludeImages(e.target.checked)}
+                />
+                <label className="form-check-label text-warning" htmlFor="includeImagesCheck">
+                  Incluir imágenes de los ejercicios al compartir
+                </label>
+              </div>
+              <small className="text-muted d-block mt-1">
+                Si está activado, las rutinas compartidas mostrarán las imágenes de los ejercicios
+              </small>
             </div>
 
             <div className="mb-4">
@@ -529,6 +552,21 @@ export default function QuickRoutineFormPage() {
                             >
                               <FontAwesomeIcon icon={faTrash} />
                             </button>
+                          </div>
+                          
+                          {/* Notas/Comentarios del entrenador */}
+                          <div className="col-12 mt-2">
+                            <label className="form-label small text-warning">
+                              <FontAwesomeIcon icon={faFileLines} /> Comentarios para el usuario
+                            </label>
+                            <textarea
+                              className="form-control bg-dark text-white border-warning"
+                              placeholder="Instrucciones especiales, consejos, variaciones..."
+                              value={ej.notas || ''}
+                              onChange={(ev) => actualizarCampo(dia, i, 'notas', ev.target.value)}
+                              rows={2}
+                            />
+                            <small className="text-muted">Este comentario aparecerá en la rutina compartida (opcional)</small>
                           </div>
                         </div>
                       </div>

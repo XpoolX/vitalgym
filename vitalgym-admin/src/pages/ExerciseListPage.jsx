@@ -4,7 +4,7 @@ import api from '../api/axios';
 import NavBar from '../components/NavBar';
 import PageHeader from '../components/PageHeader';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPenToSquare, faTrashCan, faPlus, faRotate, faDumbbell } from '@fortawesome/free-solid-svg-icons';
+import { faPenToSquare, faTrashCan, faPlus, faRotate, faDumbbell, faBolt } from '@fortawesome/free-solid-svg-icons';
 
 export default function ExerciseListPage() {
   const [ejercicios, setEjercicios] = useState([]);
@@ -145,6 +145,10 @@ export default function ExerciseListPage() {
           <div className="d-flex gap-2 flex-wrap">
             <Link to="/ejercicios/crear" className="btn btn-success" style={{ padding: '12px 20px', borderRadius: '12px', fontWeight: '700' }}>
               <FontAwesomeIcon icon={faPlus} /> Crear ejercicio
+            </Link>
+
+            <Link to="/ejercicios/crear-rapido" className="btn btn-warning" style={{ padding: '12px 20px', borderRadius: '12px', fontWeight: '700' }}>
+              <FontAwesomeIcon icon={faBolt} /> Crear ejercicio rápido
             </Link>
 
             <button className="btn btn-outline-light" onClick={fetchEjercicios} title="Refrescar" style={{ borderRadius: '12px' }}>

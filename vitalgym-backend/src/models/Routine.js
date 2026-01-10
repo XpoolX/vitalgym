@@ -6,6 +6,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       defaultValue: false
     },
+    includeImages: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    },
     shareToken: {
       type: DataTypes.STRING,
       unique: true,

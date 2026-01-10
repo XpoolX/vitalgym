@@ -25,14 +25,38 @@ export default function ExerciseEditPage() {
   });
 
   const [imagenFile, setImagenFile] = useState(null);
-  const [videoFile, setVideoFile] = useState(null);
   const [imagenPreview, setImagenPreview] = useState(null);
-  const [videoPreview, setVideoPreview] = useState(null);
   const [customGrupo, setCustomGrupo] = useState('');
   const [customEquipo, setCustomEquipo] = useState('');
+  const [customZona, setCustomZona] = useState('');
 
-  // opciones
-  const zonas = [
+  // State for custom zones and disabled base zones
+  const [zonasPersonalizadas, setZonasPersonalizadas] = useState([]);
+  const [zonasDeshabilitadas, setZonasDeshabilitadas] = useState([]);
+
+  // Load custom zones and disabled zones from localStorage
+  useEffect(() => {
+    const savedCustom = localStorage.getItem('zonasPersonalizadas');
+    if (savedCustom) {
+      try {
+        setZonasPersonalizadas(JSON.parse(savedCustom));
+      } catch (e) {
+        console.error('Error loading custom zones:', e);
+      }
+    }
+    
+    const savedDisabled = localStorage.getItem('zonasDeshabilitadas');
+    if (savedDisabled) {
+      try {
+        setZonasDeshabilitadas(JSON.parse(savedDisabled));
+      } catch (e) {
+        console.error('Error loading disabled zones:', e);
+      }
+    }
+  }, []);
+
+  // opciones con zonas personalizadas
+  const zonasBase = [
     { value: '', label: 'Selecciona zona corporal' },
     { value: 'pecho', label: 'Pecho' },
     { value: 'espalda', label: 'Espalda' },
@@ -41,6 +65,21 @@ export default function ExerciseEditPage() {
     { value: 'brazos', label: 'Brazos' },
     { value: 'abdomen', label: 'Abdomen' },
     { value: 'gluteos', label: 'Glúteos' },
+  ];
+
+  // Filter out disabled base zones and add custom zones
+  const zonasBaseFiltradas = zonasBase.filter(z => z.value === '' || !zonasDeshabilitadas.includes(z.value));
+  
+  const zonas = [
+    ...zonasBaseFiltradas,
+    ...zonasPersonalizadas.map(z => ({ value: z, label: z })),
+    { value: 'otro', label: 'Otro (añadir nueva)' }
+  ];
+
+  // Get all zones for display in management UI (excluding empty option and "otro")
+  const todasLasZonas = [
+    ...zonasBase.filter(z => z.value !== '' && !zonasDeshabilitadas.includes(z.value)),
+    ...zonasPersonalizadas.map(z => ({ value: z, label: z, isCustom: true }))
   ];
 
   const gruposByZona = {
@@ -121,9 +160,10 @@ export default function ExerciseEditPage() {
       }
     };
     fetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // previsualización de imagen/vídeo
+  // previsualización de imagen
   useEffect(() => {
     if (imagenFile) {
       const url = URL.createObjectURL(imagenFile);
@@ -134,26 +174,59 @@ export default function ExerciseEditPage() {
     }
   }, [imagenFile]);
 
-  useEffect(() => {
-    if (videoFile) {
-      const url = URL.createObjectURL(videoFile);
-      setVideoPreview(url);
-      return () => URL.revokeObjectURL(url);
-    } else {
-      setVideoPreview(null);
-    }
-  }, [videoFile]);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleAddCustomZone = () => {
+    if (customZona.trim() && !zonasPersonalizadas.includes(customZona.trim())) {
+      const newZonas = [...zonasPersonalizadas, customZona.trim()];
+      setZonasPersonalizadas(newZonas);
+      localStorage.setItem('zonasPersonalizadas', JSON.stringify(newZonas));
+      setForm((prev) => ({ ...prev, zonaCorporal: customZona.trim() }));
+      setCustomZona('');
+    }
+  };
+
+  const handleRemoveCustomZone = (zonaToRemove) => {
+    if (window.confirm(`¿Estás seguro de que quieres eliminar la zona "${zonaToRemove}"?`)) {
+      // Check if it's a custom zone
+      if (zonasPersonalizadas.includes(zonaToRemove)) {
+        // Remove from custom zones
+        const newZonas = zonasPersonalizadas.filter(z => z !== zonaToRemove);
+        setZonasPersonalizadas(newZonas);
+        localStorage.setItem('zonasPersonalizadas', JSON.stringify(newZonas));
+      } else {
+        // It's a base zone, add to disabled list
+        const newDisabled = [...zonasDeshabilitadas, zonaToRemove];
+        setZonasDeshabilitadas(newDisabled);
+        localStorage.setItem('zonasDeshabilitadas', JSON.stringify(newDisabled));
+      }
+      
+      // If the removed zone was selected, clear selection
+      if (form.zonaCorporal === zonaToRemove) {
+        setForm((prev) => ({ ...prev, zonaCorporal: '' }));
+      }
+    }
+  };
+
   const guardar = async () => {
+    // Determine final values
+    let finalZona = form.zonaCorporal;
+    if (form.zonaCorporal === 'otro' && customZona.trim()) {
+      finalZona = customZona.trim();
+      if (!zonasPersonalizadas.includes(finalZona)) {
+        const newZonas = [...zonasPersonalizadas, finalZona];
+        setZonasPersonalizadas(newZonas);
+        localStorage.setItem('zonasPersonalizadas', JSON.stringify(newZonas));
+      }
+    }
+
     const data = new FormData();
     data.append('nombre', form.nombre || '');
     data.append('descripcion', form.descripcion || '');
-    data.append('zona_corporal', form.zonaCorporal || '');
+    data.append('zona_corporal', finalZona || '');
     const grupoToSend = form.grupoMuscular === 'otro' ? customGrupo : form.grupoMuscular;
     const equipoToSend = form.equipo === 'otro' ? customEquipo : form.equipo;
     data.append('grupo_muscular', grupoToSend || '');
@@ -162,8 +235,8 @@ export default function ExerciseEditPage() {
     data.append('descripcion_corta', form.descripcionCorta || '');
     data.append('instrucciones', form.instrucciones || '');
     data.append('consejos', form.consejos || '');
+    data.append('video_url', form.videoUrl || ''); // YouTube URL
     if (imagenFile) data.append('imagen', imagenFile);
-    if (videoFile) data.append('video', videoFile);
 
     try {
       await api.put(`/admin/exercises/${id}`, data, {
@@ -175,6 +248,16 @@ export default function ExerciseEditPage() {
       console.error(err);
     }
   };
+
+  // Extract YouTube video ID from URL
+  const getYouTubeVideoId = (url) => {
+    if (!url) return null;
+    const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[7].length === 11) ? match[7] : null;
+  };
+
+  const youtubeVideoId = getYouTubeVideoId(form.videoUrl);
 
   return (
     <div className="page-container" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, black 50%, crimson 50%)', paddingTop: '150px' }}>
@@ -213,6 +296,49 @@ export default function ExerciseEditPage() {
                     <option key={z.value} value={z.value}>{z.label}</option>
                   ))}
                 </select>
+                
+                {form.zonaCorporal === 'otro' && (
+                  <div className="mt-2 d-flex gap-2">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Nombre de la nueva zona corporal"
+                      value={customZona}
+                      onChange={(e) => setCustomZona(e.target.value)}
+                    />
+                    <button 
+                      type="button" 
+                      className="btn btn-primary"
+                      onClick={handleAddCustomZone}
+                    >
+                      Añadir
+                    </button>
+                  </div>
+                )}
+                
+                {todasLasZonas.length > 0 && (
+                  <div className="mt-2">
+                    <small className="text-muted d-block mb-1">Zonas disponibles (haz clic en × para ocultar):</small>
+                    <div className="d-flex flex-wrap gap-2">
+                      {todasLasZonas.map((zona) => (
+                        <span 
+                          key={zona.value} 
+                          className={`badge ${zona.isCustom ? 'bg-primary' : 'bg-secondary'} d-flex align-items-center gap-1`}
+                          style={{ fontSize: '0.85rem', padding: '0.35rem 0.5rem' }}
+                        >
+                          {zona.label}
+                          <button
+                            type="button"
+                            className="btn-close btn-close-white"
+                            style={{ fontSize: '0.6rem', marginLeft: '4px' }}
+                            onClick={() => handleRemoveCustomZone(zona.value)}
+                            aria-label="Eliminar"
+                          ></button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
             <div className="col-md-4">
@@ -226,10 +352,10 @@ export default function ExerciseEditPage() {
                   setForm((p) => ({ ...p, grupoMuscular: v }));
                   if (v !== 'otro') setCustomGrupo('');
                 }}
-                disabled={!form.zonaCorporal}
+                disabled={!form.zonaCorporal || form.zonaCorporal === 'otro'}
               >
-                <option value="">{form.zonaCorporal ? 'Selecciona grupo' : 'Selecciona zona primero'}</option>
-                {form.zonaCorporal &&
+                <option value="">{form.zonaCorporal && form.zonaCorporal !== 'otro' ? 'Selecciona grupo' : 'Selecciona zona primero'}</option>
+                {form.zonaCorporal && form.zonaCorporal !== 'otro' &&
                   (gruposByZona[form.zonaCorporal] || []).map((g) => (
                     <option key={g} value={g}>{g}</option>
                   ))}
@@ -305,26 +431,33 @@ export default function ExerciseEditPage() {
 
           {/* === VIDEO === */}
           <div className="mb-4">
-            <label className="form-label d-block"><FontAwesomeIcon icon={faVideo} /> Vídeo actual / nuevo</label>
-            <div className="row g-2 align-items-center">
-              <div className="col-md-6">
-                {videoPreview ? (
-                  <div className="ratio ratio-16x9 border rounded">
-                    <video src={videoPreview} controls />
-                  </div>
-                ) : form.videoUrl ? (
-                  <div className="ratio ratio-16x9 border rounded">
-                    <video src={form.videoUrl} controls />
-                  </div>
-                ) : (
-                  <div className="text-muted">Sin vídeo</div>
-                )}
-              </div>
-              <div className="col-md-6">
-                <label className="form-label">Cambiar vídeo</label>
-                <input type="file" className="form-control" accept="video/*" onChange={(e) => setVideoFile(e.target.files[0])}/>
-              </div>
+            <label className="form-label d-block"><FontAwesomeIcon icon={faVideo} /> Vídeo de YouTube (URL)</label>
+            
+            <div className="mb-2">
+              <input 
+                type="text"
+                className="form-control"
+                placeholder="https://www.youtube.com/watch?v=..."
+                name="videoUrl"
+                value={form.videoUrl}
+                onChange={handleChange}
+              />
             </div>
+            
+            {youtubeVideoId && (
+              <div className="mt-3">
+                <p className="text-muted small">Vista previa:</p>
+                <div className="ratio ratio-16x9" style={{ maxWidth: '560px' }}>
+                  <iframe
+                    src={`https://www.youtube.com/embed/${youtubeVideoId}`}
+                    title="YouTube video preview"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* === BOTONES === */}

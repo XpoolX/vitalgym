@@ -145,6 +145,8 @@ exports.getById = async (req, res) => {
       id: rutina.id,
       nombre: rutina.nombre,
       descripcion: rutina.descripcion,
+      isQuickRoutine: rutina.isQuickRoutine,
+      includeImages: rutina.includeImages,
       dias: diasArray
     });
   } catch (error) {
@@ -158,17 +160,18 @@ exports.getById = async (req, res) => {
  */
 exports.create = async (req, res) => {
   try {
-    const { nombre, descripcion, dias, isQuickRoutine } = req.body;
+    const { nombre, descripcion, dias, isQuickRoutine, includeImages } = req.body;
     console.log('========== CREATE ROUTINE REQUEST ==========');
     console.log('Full request body:', JSON.stringify(req.body, null, 2));
-    console.log('Creating routine:', { nombre, descripcion, isQuickRoutine, diasCount: dias?.length });
+    console.log('Creating routine:', { nombre, descripcion, isQuickRoutine, includeImages, diasCount: dias?.length });
     console.log('Dias is Array?', Array.isArray(dias));
     console.log('Dias value:', dias);
     
     const nuevaRutina = await Routine.create({ 
       nombre, 
       descripcion,
-      isQuickRoutine: isQuickRoutine || false
+      isQuickRoutine: isQuickRoutine || false,
+      includeImages: includeImages !== undefined ? includeImages : true
     });
     console.log('Routine created with ID:', nuevaRutina.id);
 
@@ -210,12 +213,18 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, descripcion, dias } = req.body;
+    const { nombre, descripcion, dias, includeImages } = req.body;
 
     const rutina = await Routine.findByPk(id);
     if (!rutina) return res.status(404).json({ message: 'Rutina no encontrada' });
 
-    await rutina.update({ nombre, descripcion });
+    // Update routine with includeImages field
+    const updateData = { nombre, descripcion };
+    if (includeImages !== undefined) {
+      updateData.includeImages = includeImages;
+    }
+    await rutina.update(updateData);
+    
     await RoutineExercise.destroy({ where: { routineId: id } });
 
     if (Array.isArray(dias)) {
@@ -350,25 +359,31 @@ exports.getByShareToken = async (req, res) => {
       return res.status(404).json({ message: 'Rutina no encontrada', token });
     }
     
-    console.log('Found routine:', { id: rutina.id, nombre: rutina.nombre, isQuickRoutine: rutina.isQuickRoutine });
+    console.log('Found routine:', { id: rutina.id, nombre: rutina.nombre, isQuickRoutine: rutina.isQuickRoutine, includeImages: rutina.includeImages });
     
     if (!rutina.isQuickRoutine) {
       console.log('Routine is not a quick routine');
       return res.status(400).json({ message: 'Rutina no válida' });
     }
     
-    // Get exercises without image URLs for quick routines
+    // Determine which exercise attributes to include based on includeImages setting
+    const exerciseAttributes = ['nombre', 'grupoMuscular', 'zonaCorporal'];
+    if (rutina.includeImages) {
+      exerciseAttributes.push('imagenUrl');
+    }
+    
+    // Get exercises with or without image URLs based on routine setting
     const ejercicios = await RoutineExercise.findAll({
       where: { routineId: rutina.id },
       include: [{ 
         model: Exercise, 
         as: 'Exercise', 
-        attributes: ['nombre', 'grupoMuscular', 'zonaCorporal']
+        attributes: exerciseAttributes
       }],
       order: [['dia', 'ASC'], ['id', 'ASC']]
     });
     
-    console.log('Found exercises:', ejercicios.length);
+    console.log('Found exercises:', ejercicios.length, 'includeImages:', rutina.includeImages);
     
     const dias = {};
     ejercicios.forEach(ej => {
@@ -377,14 +392,22 @@ exports.getByShareToken = async (req, res) => {
       const finalSeries = (Array.isArray(parsed) && parsed.length) ? parsed : (ej.repeticiones ? [String(ej.repeticiones)] : []);
       
       if (!dias[ej.dia]) dias[ej.dia] = [];
-      dias[ej.dia].push({
+      
+      const ejercicioData = {
         exerciseId: ej.exerciseId,
         nombre: ej.Exercise?.nombre || null,
         grupoMuscular: ej.Exercise?.grupoMuscular || null,
         series: finalSeries,
         descansoSegundos: ej.descansoSegundos,
         notas: ej.notas
-      });
+      };
+      
+      // Only include imagenUrl if includeImages is enabled
+      if (rutina.includeImages && ej.Exercise?.imagenUrl) {
+        ejercicioData.imagenUrl = ej.Exercise.imagenUrl;
+      }
+      
+      dias[ej.dia].push(ejercicioData);
     });
     
     const diasArray = Object.keys(dias)
@@ -397,6 +420,7 @@ exports.getByShareToken = async (req, res) => {
       id: rutina.id,
       nombre: rutina.nombre,
       descripcion: rutina.descripcion,
+      includeImages: rutina.includeImages,
       dias: diasArray
     });
   } catch (error) {
