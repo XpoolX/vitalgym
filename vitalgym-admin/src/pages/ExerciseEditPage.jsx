@@ -30,9 +30,25 @@ export default function ExerciseEditPage() {
   const [videoPreview, setVideoPreview] = useState(null);
   const [customGrupo, setCustomGrupo] = useState('');
   const [customEquipo, setCustomEquipo] = useState('');
+  const [customZona, setCustomZona] = useState('');
 
-  // opciones
-  const zonas = [
+  // State for custom zones
+  const [zonasPersonalizadas, setZonasPersonalizadas] = useState([]);
+
+  // Load custom zones from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('zonasPersonalizadas');
+    if (saved) {
+      try {
+        setZonasPersonalizadas(JSON.parse(saved));
+      } catch (e) {
+        console.error('Error loading custom zones:', e);
+      }
+    }
+  }, []);
+
+  // opciones con zonas personalizadas
+  const zonasBase = [
     { value: '', label: 'Selecciona zona corporal' },
     { value: 'pecho', label: 'Pecho' },
     { value: 'espalda', label: 'Espalda' },
@@ -41,6 +57,13 @@ export default function ExerciseEditPage() {
     { value: 'brazos', label: 'Brazos' },
     { value: 'abdomen', label: 'Abdomen' },
     { value: 'gluteos', label: 'Glúteos' },
+  ];
+
+  // Add custom zones to the list
+  const zonas = [
+    ...zonasBase,
+    ...zonasPersonalizadas.map(z => ({ value: z, label: z })),
+    { value: 'otro', label: 'Otro (añadir nueva)' }
   ];
 
   const gruposByZona = {
@@ -149,11 +172,32 @@ export default function ExerciseEditPage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleAddCustomZone = () => {
+    if (customZona.trim() && !zonasPersonalizadas.includes(customZona.trim())) {
+      const newZonas = [...zonasPersonalizadas, customZona.trim()];
+      setZonasPersonalizadas(newZonas);
+      localStorage.setItem('zonasPersonalizadas', JSON.stringify(newZonas));
+      setForm((prev) => ({ ...prev, zonaCorporal: customZona.trim() }));
+      setCustomZona('');
+    }
+  };
+
   const guardar = async () => {
+    // Determine final values
+    let finalZona = form.zonaCorporal;
+    if (form.zonaCorporal === 'otro' && customZona.trim()) {
+      finalZona = customZona.trim();
+      if (!zonasPersonalizadas.includes(finalZona)) {
+        const newZonas = [...zonasPersonalizadas, finalZona];
+        setZonasPersonalizadas(newZonas);
+        localStorage.setItem('zonasPersonalizadas', JSON.stringify(newZonas));
+      }
+    }
+
     const data = new FormData();
     data.append('nombre', form.nombre || '');
     data.append('descripcion', form.descripcion || '');
-    data.append('zona_corporal', form.zonaCorporal || '');
+    data.append('zona_corporal', finalZona || '');
     const grupoToSend = form.grupoMuscular === 'otro' ? customGrupo : form.grupoMuscular;
     const equipoToSend = form.equipo === 'otro' ? customEquipo : form.equipo;
     data.append('grupo_muscular', grupoToSend || '');
@@ -162,8 +206,8 @@ export default function ExerciseEditPage() {
     data.append('descripcion_corta', form.descripcionCorta || '');
     data.append('instrucciones', form.instrucciones || '');
     data.append('consejos', form.consejos || '');
+    data.append('video_url', form.videoUrl || ''); // YouTube URL
     if (imagenFile) data.append('imagen', imagenFile);
-    if (videoFile) data.append('video', videoFile);
 
     try {
       await api.put(`/admin/exercises/${id}`, data, {
@@ -175,6 +219,16 @@ export default function ExerciseEditPage() {
       console.error(err);
     }
   };
+
+  // Extract YouTube video ID from URL
+  const getYouTubeVideoId = (url) => {
+    if (!url) return null;
+    const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[7].length === 11) ? match[7] : null;
+  };
+
+  const youtubeVideoId = getYouTubeVideoId(form.videoUrl);
 
   return (
     <div className="page-container" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, black 50%, crimson 50%)', paddingTop: '150px' }}>
@@ -213,6 +267,25 @@ export default function ExerciseEditPage() {
                     <option key={z.value} value={z.value}>{z.label}</option>
                   ))}
                 </select>
+                
+                {form.zonaCorporal === 'otro' && (
+                  <div className="mt-2 d-flex gap-2">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Nombre de la nueva zona corporal"
+                      value={customZona}
+                      onChange={(e) => setCustomZona(e.target.value)}
+                    />
+                    <button 
+                      type="button" 
+                      className="btn btn-primary"
+                      onClick={handleAddCustomZone}
+                    >
+                      Añadir
+                    </button>
+                  </div>
+                )}
               </div>
 
             <div className="col-md-4">
@@ -226,10 +299,10 @@ export default function ExerciseEditPage() {
                   setForm((p) => ({ ...p, grupoMuscular: v }));
                   if (v !== 'otro') setCustomGrupo('');
                 }}
-                disabled={!form.zonaCorporal}
+                disabled={!form.zonaCorporal || form.zonaCorporal === 'otro'}
               >
-                <option value="">{form.zonaCorporal ? 'Selecciona grupo' : 'Selecciona zona primero'}</option>
-                {form.zonaCorporal &&
+                <option value="">{form.zonaCorporal && form.zonaCorporal !== 'otro' ? 'Selecciona grupo' : 'Selecciona zona primero'}</option>
+                {form.zonaCorporal && form.zonaCorporal !== 'otro' &&
                   (gruposByZona[form.zonaCorporal] || []).map((g) => (
                     <option key={g} value={g}>{g}</option>
                   ))}
@@ -305,26 +378,33 @@ export default function ExerciseEditPage() {
 
           {/* === VIDEO === */}
           <div className="mb-4">
-            <label className="form-label d-block"><FontAwesomeIcon icon={faVideo} /> Vídeo actual / nuevo</label>
-            <div className="row g-2 align-items-center">
-              <div className="col-md-6">
-                {videoPreview ? (
-                  <div className="ratio ratio-16x9 border rounded">
-                    <video src={videoPreview} controls />
-                  </div>
-                ) : form.videoUrl ? (
-                  <div className="ratio ratio-16x9 border rounded">
-                    <video src={form.videoUrl} controls />
-                  </div>
-                ) : (
-                  <div className="text-muted">Sin vídeo</div>
-                )}
-              </div>
-              <div className="col-md-6">
-                <label className="form-label">Cambiar vídeo</label>
-                <input type="file" className="form-control" accept="video/*" onChange={(e) => setVideoFile(e.target.files[0])}/>
-              </div>
+            <label className="form-label d-block"><FontAwesomeIcon icon={faVideo} /> Vídeo de YouTube (URL)</label>
+            
+            <div className="mb-2">
+              <input 
+                type="text"
+                className="form-control"
+                placeholder="https://www.youtube.com/watch?v=..."
+                name="videoUrl"
+                value={form.videoUrl}
+                onChange={handleChange}
+              />
             </div>
+            
+            {youtubeVideoId && (
+              <div className="mt-3">
+                <p className="text-muted small">Vista previa:</p>
+                <div className="ratio ratio-16x9" style={{ maxWidth: '560px' }}>
+                  <iframe
+                    src={`https://www.youtube.com/embed/${youtubeVideoId}`}
+                    title="YouTube video preview"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* === BOTONES === */}

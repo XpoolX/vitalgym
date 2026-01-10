@@ -7,6 +7,7 @@ import QuickRoutineFormPage from './pages/QuickRoutineFormPage';
 import RoutineListPage from './pages/RoutineListPage';
 import ExerciseListPage from './pages/ExerciseListPage';
 import ExerciseFormPage from './pages/ExerciseFormPage';
+import QuickExerciseFormPage from './pages/QuickExerciseFormPage';
 import AssignRoutinePage from './pages/AssignRoutinePage';
 import RoutineEditPage from './pages/RoutineEditPage';
 import ExerciseEditPage from './pages/ExerciseEditPage';
@@ -27,6 +28,7 @@ function App() {
         <Route path="/rutinas/crear-rapida" element={<QuickRoutineFormPage />} />
         <Route path="/ejercicios" element={<ExerciseListPage />} />
         <Route path="/ejercicios/crear" element={<ExerciseFormPage />} />
+        <Route path="/ejercicios/crear-rapido" element={<QuickExerciseFormPage />} />
         <Route path="/asignar" element={<AssignRoutinePage />} />
         <Route path="/rutinas/:id/editar" element={<RoutineEditPage />} />
         <Route path="/rutinas/:id/editar-rapida" element={<QuickRoutineFormPage />} />
