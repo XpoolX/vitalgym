@@ -226,13 +226,29 @@ export default function PublicQuickRoutineView() {
                   style={{ borderBottom: ejercicioIndex < dia.ejercicios.length - 1 ? '1px solid #333' : 'none' }}
                 >
                   <div className="d-flex justify-content-between align-items-start mb-2">
-                    <div>
-                      <h6 className="mb-1" style={{ color: '#ffc107' }}>
-                        {ejercicio.nombre}
-                      </h6>
-                      {ejercicio.grupoMuscular && (
-                        <small className="text-muted">{ejercicio.grupoMuscular}</small>
+                    <div className="d-flex align-items-center gap-3">
+                      {/* Exercise image if available */}
+                      {ejercicio.imagenUrl && (
+                        <img 
+                          src={ejercicio.imagenUrl} 
+                          alt={ejercicio.nombre}
+                          style={{ 
+                            width: '60px', 
+                            height: '60px', 
+                            objectFit: 'cover', 
+                            borderRadius: '8px',
+                            border: '2px solid #ffc107'
+                          }}
+                        />
                       )}
+                      <div>
+                        <h6 className="mb-1" style={{ color: '#ffc107' }}>
+                          {ejercicio.nombre}
+                        </h6>
+                        {ejercicio.grupoMuscular && (
+                          <small className="text-muted">{ejercicio.grupoMuscular}</small>
+                        )}
+                      </div>
                     </div>
                     <div className="text-end">
                       <small className="text-muted">
