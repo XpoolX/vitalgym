@@ -28,14 +28,24 @@ exports.create = async (req, res) => {
       nivel,
       descripcion_corta,
       instrucciones,
-      consejos
+      consejos,
+      video_url
     } = req.body;
 
     const imagenFile = req.files?.imagen?.[0];
     const videoFile = req.files?.video?.[0];
 
     const imagenUrl = imagenFile ? buildFullUrl(req, `/uploads/${imagenFile.filename}`) : null;
-    const videoUrl = videoFile ? buildFullUrl(req, `/uploads/${videoFile.filename}`) : null;
+    
+    // Support both video file upload and YouTube URL
+    let videoUrl = null;
+    if (video_url && video_url.trim()) {
+      // YouTube URL provided
+      videoUrl = video_url.trim();
+    } else if (videoFile) {
+      // Video file uploaded
+      videoUrl = buildFullUrl(req, `/uploads/${videoFile.filename}`);
+    }
 
     const nuevo = await Exercise.create({
       nombre,
@@ -73,7 +83,8 @@ exports.update = async (req, res) => {
       nivel,
       descripcion_corta,
       instrucciones,
-      consejos
+      consejos,
+      video_url
     } = req.body;
 
     const imagenFile = req.files?.imagen?.[0];
@@ -83,9 +94,15 @@ exports.update = async (req, res) => {
       ? buildFullUrl(req, `/uploads/${imagenFile.filename}`)
       : ejercicio.imagenUrl;
 
-    const videoUrl = videoFile
-      ? buildFullUrl(req, `/uploads/${videoFile.filename}`)
-      : ejercicio.videoUrl;
+    // Support both video file upload and YouTube URL
+    let videoUrl = ejercicio.videoUrl;
+    if (video_url !== undefined) {
+      // video_url was provided in the request (could be empty string or URL)
+      videoUrl = video_url.trim() || null;
+    } else if (videoFile) {
+      // Video file was uploaded
+      videoUrl = buildFullUrl(req, `/uploads/${videoFile.filename}`);
+    }
 
     // Actualizar respetando los campos existentes cuando no se envían
     await ejercicio.update({
