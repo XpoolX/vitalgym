@@ -28,7 +28,32 @@ CREATE INDEX idx_routines_shareToken ON Routines(shareToken);
 - `shareToken`: A unique token for generating shareable public links
 - Index on `shareToken` for faster public lookups
 
-### Using Sequelize Sync
+## Include Images Feature
+
+To enable the includeImages setting for quick routines:
+
+### Running the Migration
+
+Execute the SQL script:
+
+```bash
+mysql -u YOUR_USER -p YOUR_DATABASE < migrations/add_includeImages_field.sql
+```
+
+Or manually run the following SQL:
+
+```sql
+ALTER TABLE Routines 
+ADD COLUMN includeImages BOOLEAN DEFAULT TRUE;
+
+UPDATE Routines SET includeImages = TRUE WHERE includeImages IS NULL;
+```
+
+### What This Does
+
+- `includeImages`: A boolean flag to control whether exercise images are included when sharing quick routines (defaults to TRUE for backward compatibility)
+
+## Using Sequelize Sync
 
 Alternatively, if you're using Sequelize sync in development, the models will automatically create these columns:
 
