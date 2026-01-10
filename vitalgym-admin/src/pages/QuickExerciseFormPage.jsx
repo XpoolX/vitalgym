@@ -19,19 +19,29 @@ export default function QuickExerciseFormPage() {
   const [instrucciones, setInstrucciones] = useState('');
   const [consejos, setConsejos] = useState('');
 
-  // State for custom zones
+  // State for custom zones and disabled base zones
   const [zonasPersonalizadas, setZonasPersonalizadas] = useState([]);
+  const [zonasDeshabilitadas, setZonasDeshabilitadas] = useState([]);
 
   const navigate = useNavigate();
 
-  // Load custom zones from localStorage
+  // Load custom zones and disabled zones from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('zonasPersonalizadas');
-    if (saved) {
+    const savedCustom = localStorage.getItem('zonasPersonalizadas');
+    if (savedCustom) {
       try {
-        setZonasPersonalizadas(JSON.parse(saved));
+        setZonasPersonalizadas(JSON.parse(savedCustom));
       } catch (e) {
         console.error('Error loading custom zones:', e);
+      }
+    }
+    
+    const savedDisabled = localStorage.getItem('zonasDeshabilitadas');
+    if (savedDisabled) {
+      try {
+        setZonasDeshabilitadas(JSON.parse(savedDisabled));
+      } catch (e) {
+        console.error('Error loading disabled zones:', e);
       }
     }
   }, []);
@@ -48,11 +58,19 @@ export default function QuickExerciseFormPage() {
     { value: 'gluteos', label: 'Glúteos' },
   ];
 
-  // Add custom zones to the list
+  // Filter out disabled base zones and add custom zones
+  const zonasBaseFiltradas = zonasBase.filter(z => z.value === '' || !zonasDeshabilitadas.includes(z.value));
+  
   const zonas = [
-    ...zonasBase,
+    ...zonasBaseFiltradas,
     ...zonasPersonalizadas.map(z => ({ value: z, label: z })),
     { value: 'otro', label: 'Otro (añadir nueva)' }
+  ];
+
+  // Get all zones for display in management UI (excluding empty option and "otro")
+  const todasLasZonas = [
+    ...zonasBase.filter(z => z.value !== '' && !zonasDeshabilitadas.includes(z.value)),
+    ...zonasPersonalizadas.map(z => ({ value: z, label: z, isCustom: true }))
   ];
 
   // Image preview effect
@@ -86,9 +104,19 @@ export default function QuickExerciseFormPage() {
 
   const handleRemoveCustomZone = (zonaToRemove) => {
     if (window.confirm(`¿Estás seguro de que quieres eliminar la zona "${zonaToRemove}"?`)) {
-      const newZonas = zonasPersonalizadas.filter(z => z !== zonaToRemove);
-      setZonasPersonalizadas(newZonas);
-      localStorage.setItem('zonasPersonalizadas', JSON.stringify(newZonas));
+      // Check if it's a custom zone
+      if (zonasPersonalizadas.includes(zonaToRemove)) {
+        // Remove from custom zones
+        const newZonas = zonasPersonalizadas.filter(z => z !== zonaToRemove);
+        setZonasPersonalizadas(newZonas);
+        localStorage.setItem('zonasPersonalizadas', JSON.stringify(newZonas));
+      } else {
+        // It's a base zone, add to disabled list
+        const newDisabled = [...zonasDeshabilitadas, zonaToRemove];
+        setZonasDeshabilitadas(newDisabled);
+        localStorage.setItem('zonasDeshabilitadas', JSON.stringify(newDisabled));
+      }
+      
       // If the removed zone was selected, clear selection
       if (zonaCorporal === zonaToRemove) {
         setZonaCorporal('');
@@ -228,22 +256,22 @@ export default function QuickExerciseFormPage() {
                 </div>
               )}
               
-              {zonasPersonalizadas.length > 0 && (
+              {todasLasZonas.length > 0 && (
                 <div className="mt-2">
-                  <small className="text-muted d-block mb-1">Zonas personalizadas:</small>
+                  <small className="text-muted d-block mb-1">Zonas disponibles (haz clic en × para ocultar):</small>
                   <div className="d-flex flex-wrap gap-2">
-                    {zonasPersonalizadas.map((zona) => (
+                    {todasLasZonas.map((zona) => (
                       <span 
-                        key={zona} 
-                        className="badge bg-warning text-dark d-flex align-items-center gap-1"
+                        key={zona.value} 
+                        className={`badge ${zona.isCustom ? 'bg-warning text-dark' : 'bg-secondary'} d-flex align-items-center gap-1`}
                         style={{ fontSize: '0.9rem', padding: '0.4rem 0.6rem' }}
                       >
-                        {zona}
+                        {zona.label}
                         <button
                           type="button"
                           className="btn-close btn-close-white"
                           style={{ fontSize: '0.6rem', marginLeft: '4px' }}
-                          onClick={() => handleRemoveCustomZone(zona)}
+                          onClick={() => handleRemoveCustomZone(zona.value)}
                           aria-label="Eliminar"
                         ></button>
                       </span>
