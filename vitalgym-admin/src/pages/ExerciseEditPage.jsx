@@ -25,9 +25,7 @@ export default function ExerciseEditPage() {
   });
 
   const [imagenFile, setImagenFile] = useState(null);
-  const [videoFile, setVideoFile] = useState(null);
   const [imagenPreview, setImagenPreview] = useState(null);
-  const [videoPreview, setVideoPreview] = useState(null);
   const [customGrupo, setCustomGrupo] = useState('');
   const [customEquipo, setCustomEquipo] = useState('');
   const [customZona, setCustomZona] = useState('');
@@ -144,9 +142,10 @@ export default function ExerciseEditPage() {
       }
     };
     fetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // previsualización de imagen/vídeo
+  // previsualización de imagen
   useEffect(() => {
     if (imagenFile) {
       const url = URL.createObjectURL(imagenFile);
@@ -156,16 +155,6 @@ export default function ExerciseEditPage() {
       setImagenPreview(null);
     }
   }, [imagenFile]);
-
-  useEffect(() => {
-    if (videoFile) {
-      const url = URL.createObjectURL(videoFile);
-      setVideoPreview(url);
-      return () => URL.revokeObjectURL(url);
-    } else {
-      setVideoPreview(null);
-    }
-  }, [videoFile]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

@@ -4,7 +4,7 @@ import api from '../api/axios';
 import NavBar from '../components/NavBar';
 import PageHeader from '../components/PageHeader';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRotate, faDumbbell, faBolt } from '@fortawesome/free-solid-svg-icons';
+import { faPenToSquare, faTrashCan, faPlus, faRotate, faDumbbell, faBolt } from '@fortawesome/free-solid-svg-icons';
 
 export default function ExerciseListPage() {
   const [ejercicios, setEjercicios] = useState([]);

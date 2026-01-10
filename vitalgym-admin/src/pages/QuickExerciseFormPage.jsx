@@ -4,7 +4,7 @@ import api from '../api/axios';
 import NavBar from '../components/NavBar';
 import PageHeader from '../components/PageHeader';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDumbbell, faFileLines, faCamera, faVideo, faBolt } from '@fortawesome/free-solid-svg-icons';
+import { faFileLines, faCamera, faVideo, faBolt } from '@fortawesome/free-solid-svg-icons';
 
 export default function QuickExerciseFormPage() {
   const [nombre, setNombre] = useState('');
