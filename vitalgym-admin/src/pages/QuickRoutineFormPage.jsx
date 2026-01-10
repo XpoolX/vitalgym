@@ -553,6 +553,21 @@ export default function QuickRoutineFormPage() {
                               <FontAwesomeIcon icon={faTrash} />
                             </button>
                           </div>
+                          
+                          {/* Notas/Comentarios del entrenador */}
+                          <div className="col-12 mt-2">
+                            <label className="form-label small text-warning">
+                              <FontAwesomeIcon icon={faFileLines} /> Comentarios para el usuario
+                            </label>
+                            <textarea
+                              className="form-control bg-dark text-white border-warning"
+                              placeholder="Instrucciones especiales, consejos, variaciones..."
+                              value={ej.notas || ''}
+                              onChange={(ev) => actualizarCampo(dia, i, 'notas', ev.target.value)}
+                              rows={2}
+                            />
+                            <small className="text-muted">Este comentario aparecerá en la rutina compartida (opcional)</small>
+                          </div>
                         </div>
                       </div>
                     );
