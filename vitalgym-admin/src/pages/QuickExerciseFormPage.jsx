@@ -10,13 +10,12 @@ export default function QuickExerciseFormPage() {
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [imagen, setImagen] = useState(null);
+  const [imagenPreview, setImagenPreview] = useState(null);
   const [videoUrl, setVideoUrl] = useState('');
 
   // Campos para zonas corporales
   const [zonaCorporal, setZonaCorporal] = useState('');
-  const [grupoMuscular, setGrupoMuscular] = useState('');
   const [customZona, setCustomZona] = useState('');
-  const [customGrupo, setCustomGrupo] = useState('');
   const [instrucciones, setInstrucciones] = useState('');
   const [consejos, setConsejos] = useState('');
 
@@ -56,29 +55,21 @@ export default function QuickExerciseFormPage() {
     { value: 'otro', label: 'Otro (añadir nueva)' }
   ];
 
-  const gruposByZona = {
-    pecho: ['Pectorales', 'Pectorales superiores', 'Pectorales inferiores'],
-    espalda: ['Dorsales', 'Trapecio', 'Erectores'],
-    piernas: ['Cuádriceps', 'Isquiotibiales', 'Pantorrillas'],
-    hombros: ['Deltoides anteriores', 'Deltoides laterales', 'Deltoides posteriores'],
-    brazos: ['Bíceps', 'Tríceps', 'Antebrazos'],
-    abdomen: ['Recto abdominal', 'Oblicuos', 'Transverso'],
-    gluteos: ['Glúteo mayor', 'Glúteo medio', 'Glúteo menor'],
-  };
+  // Image preview effect
+  useEffect(() => {
+    if (imagen) {
+      const url = URL.createObjectURL(imagen);
+      setImagenPreview(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setImagenPreview(null);
+    }
+  }, [imagen]);
 
-  // Actualiza las opciones de grupo muscular cuando cambia la zona corporal
+  // Actualiza las opciones cuando cambia la zona corporal
   useEffect(() => {
     if (!zonaCorporal || zonaCorporal === 'otro') {
-      setGrupoMuscular('');
       return;
-    }
-    const opciones = gruposByZona[zonaCorporal];
-    if (opciones && opciones.length > 0) {
-      if (!opciones.includes(grupoMuscular)) {
-        setGrupoMuscular('');
-      }
-    } else {
-      setGrupoMuscular('');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zonaCorporal]);
@@ -90,6 +81,18 @@ export default function QuickExerciseFormPage() {
       localStorage.setItem('zonasPersonalizadas', JSON.stringify(newZonas));
       setZonaCorporal(customZona.trim());
       setCustomZona('');
+    }
+  };
+
+  const handleRemoveCustomZone = (zonaToRemove) => {
+    if (window.confirm(`¿Estás seguro de que quieres eliminar la zona "${zonaToRemove}"?`)) {
+      const newZonas = zonasPersonalizadas.filter(z => z !== zonaToRemove);
+      setZonasPersonalizadas(newZonas);
+      localStorage.setItem('zonasPersonalizadas', JSON.stringify(newZonas));
+      // If the removed zone was selected, clear selection
+      if (zonaCorporal === zonaToRemove) {
+        setZonaCorporal('');
+      }
     }
   };
 
@@ -118,7 +121,7 @@ export default function QuickExerciseFormPage() {
 
     // Campos (snake_case)
     formData.append('zona_corporal', finalZona);
-    formData.append('grupo_muscular', finalGrupo);
+    formData.append('grupo_muscular', ''); // Quick exercise doesn't have muscle group
     // Quick exercise doesn't have equipo and nivel
     formData.append('equipo', '');
     formData.append('nivel', '');
@@ -172,6 +175,7 @@ export default function QuickExerciseFormPage() {
 
           <div className="card-body bg-black text-white" style={{ padding: '24px' }}>
             <div className="mb-3">
+              <label className="form-label text-warning">Nombre del ejercicio</label>
               <input
                 className="form-control bg-dark text-white border-warning"
                 placeholder="Nombre del ejercicio"
@@ -181,6 +185,7 @@ export default function QuickExerciseFormPage() {
             </div>
 
             <div className="mb-3">
+              <label className="form-label text-warning">Descripción</label>
               <textarea
                 className="form-control bg-dark text-white border-warning"
                 placeholder="Descripción completa"
@@ -190,69 +195,62 @@ export default function QuickExerciseFormPage() {
               />
             </div>
 
-            <div className="row">
-              <div className="col-md-6 mb-3">
-                <select
-                  className="form-select bg-dark text-white border-warning"
-                  value={zonaCorporal}
-                  onChange={(e) => setZonaCorporal(e.target.value)}
-                >
-                  {zonas.map((z) => (
-                    <option key={z.value} value={z.value}>
-                      {z.label}
-                    </option>
-                  ))}
-                </select>
-                
-                {zonaCorporal === 'otro' && (
-                  <div className="mt-2 d-flex gap-2">
-                    <input
-                      type="text"
-                      className="form-control bg-dark text-white border-warning"
-                      placeholder="Nombre de la nueva zona corporal"
-                      value={customZona}
-                      onChange={(e) => setCustomZona(e.target.value)}
-                    />
-                    <button 
-                      type="button" 
-                      className="btn btn-warning"
-                      onClick={handleAddCustomZone}
-                    >
-                      Añadir
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              <div className="col-md-6 mb-3">
-                <select
-                  className="form-select bg-dark text-white border-warning"
-                  value={grupoMuscular}
-                  onChange={(e) => setGrupoMuscular(e.target.value)}
-                  disabled={!zonaCorporal || zonaCorporal === 'otro'}
-                >
-                  <option value="">{zonaCorporal && zonaCorporal !== 'otro' ? 'Selecciona grupo muscular' : 'Selecciona zona primero'}</option>
-                  {zonaCorporal && zonaCorporal !== 'otro' &&
-                    (gruposByZona[zonaCorporal] || []).map((g) => (
-                      <option key={g} value={g}>
-                        {g}
-                      </option>
+            <div className="mb-3">
+              <label className="form-label text-warning">Zona corporal</label>
+              <select
+                className="form-select bg-dark text-white border-warning"
+                value={zonaCorporal}
+                onChange={(e) => setZonaCorporal(e.target.value)}
+              >
+                {zonas.map((z) => (
+                  <option key={z.value} value={z.value}>
+                    {z.label}
+                  </option>
+                ))}
+              </select>
+              
+              {zonaCorporal === 'otro' && (
+                <div className="mt-2 d-flex gap-2">
+                  <input
+                    type="text"
+                    className="form-control bg-dark text-white border-warning"
+                    placeholder="Nombre de la nueva zona corporal"
+                    value={customZona}
+                    onChange={(e) => setCustomZona(e.target.value)}
+                  />
+                  <button 
+                    type="button" 
+                    className="btn btn-warning"
+                    onClick={handleAddCustomZone}
+                  >
+                    Añadir
+                  </button>
+                </div>
+              )}
+              
+              {zonasPersonalizadas.length > 0 && (
+                <div className="mt-2">
+                  <small className="text-muted d-block mb-1">Zonas personalizadas:</small>
+                  <div className="d-flex flex-wrap gap-2">
+                    {zonasPersonalizadas.map((zona) => (
+                      <span 
+                        key={zona} 
+                        className="badge bg-warning text-dark d-flex align-items-center gap-1"
+                        style={{ fontSize: '0.9rem', padding: '0.4rem 0.6rem' }}
+                      >
+                        {zona}
+                        <button
+                          type="button"
+                          className="btn-close btn-close-white"
+                          style={{ fontSize: '0.6rem', marginLeft: '4px' }}
+                          onClick={() => handleRemoveCustomZone(zona)}
+                          aria-label="Eliminar"
+                        ></button>
+                      </span>
                     ))}
-                  <option value="otro">Otro</option>
-                </select>
-                
-                {grupoMuscular === 'otro' && (
-                  <div className="mt-2">
-                    <input
-                      type="text"
-                      className="form-control bg-dark text-white border-warning"
-                      placeholder="Nombre del grupo muscular"
-                      value={customGrupo}
-                      onChange={(e) => setCustomGrupo(e.target.value)}
-                    />
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
             <div className="mb-3">
@@ -285,6 +283,18 @@ export default function QuickExerciseFormPage() {
                 accept="image/*"
                 onChange={(e) => setImagen(e.target.files[0])}
               />
+              
+              {imagenPreview && (
+                <div className="mt-3">
+                  <p className="text-muted small">Vista previa:</p>
+                  <img 
+                    src={imagenPreview} 
+                    alt="Preview" 
+                    className="img-fluid rounded border border-warning" 
+                    style={{ maxHeight: '200px', objectFit: 'cover' }}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="mb-4">

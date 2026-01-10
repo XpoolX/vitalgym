@@ -10,6 +10,7 @@ export default function ExerciseFormPage() {
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [imagen, setImagen] = useState(null);
+  const [imagenPreview, setImagenPreview] = useState(null);
   const [videoUrl, setVideoUrl] = useState('');
 
   // Nuevos campos solicitados
@@ -39,6 +40,17 @@ export default function ExerciseFormPage() {
       }
     }
   }, []);
+
+  // Image preview effect
+  useEffect(() => {
+    if (imagen) {
+      const url = URL.createObjectURL(imagen);
+      setImagenPreview(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setImagenPreview(null);
+    }
+  }, [imagen]);
 
   // Opciones para desplegables con zonas personalizadas
   const zonasBase = [
@@ -107,6 +119,18 @@ export default function ExerciseFormPage() {
       localStorage.setItem('zonasPersonalizadas', JSON.stringify(newZonas));
       setZonaCorporal(customZona.trim());
       setCustomZona('');
+    }
+  };
+
+  const handleRemoveCustomZone = (zonaToRemove) => {
+    if (window.confirm(`¿Estás seguro de que quieres eliminar la zona "${zonaToRemove}"?`)) {
+      const newZonas = zonasPersonalizadas.filter(z => z !== zonaToRemove);
+      setZonasPersonalizadas(newZonas);
+      localStorage.setItem('zonasPersonalizadas', JSON.stringify(newZonas));
+      // If the removed zone was selected, clear selection
+      if (zonaCorporal === zonaToRemove) {
+        setZonaCorporal('');
+      }
     }
   };
 
@@ -243,6 +267,30 @@ export default function ExerciseFormPage() {
                   </button>
                 </div>
               )}
+              
+              {zonasPersonalizadas.length > 0 && (
+                <div className="mt-2">
+                  <small className="text-muted d-block mb-1">Zonas personalizadas:</small>
+                  <div className="d-flex flex-wrap gap-2">
+                    {zonasPersonalizadas.map((zona) => (
+                      <span 
+                        key={zona} 
+                        className="badge bg-primary d-flex align-items-center gap-1"
+                        style={{ fontSize: '0.85rem', padding: '0.35rem 0.5rem' }}
+                      >
+                        {zona}
+                        <button
+                          type="button"
+                          className="btn-close btn-close-white"
+                          style={{ fontSize: '0.6rem', marginLeft: '4px' }}
+                          onClick={() => handleRemoveCustomZone(zona)}
+                          aria-label="Eliminar"
+                        ></button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="col-md-4 mb-3">
@@ -337,6 +385,18 @@ export default function ExerciseFormPage() {
               accept="image/*"
               onChange={(e) => setImagen(e.target.files[0])}
             />
+            
+            {imagenPreview && (
+              <div className="mt-3">
+                <p className="text-muted small">Vista previa:</p>
+                <img 
+                  src={imagenPreview} 
+                  alt="Preview" 
+                  className="img-fluid rounded border" 
+                  style={{ maxHeight: '200px', objectFit: 'cover' }}
+                />
+              </div>
+            )}
           </div>
 
           <div className="mb-4">

@@ -171,6 +171,18 @@ export default function ExerciseEditPage() {
     }
   };
 
+  const handleRemoveCustomZone = (zonaToRemove) => {
+    if (window.confirm(`¿Estás seguro de que quieres eliminar la zona "${zonaToRemove}"?`)) {
+      const newZonas = zonasPersonalizadas.filter(z => z !== zonaToRemove);
+      setZonasPersonalizadas(newZonas);
+      localStorage.setItem('zonasPersonalizadas', JSON.stringify(newZonas));
+      // If the removed zone was selected, clear selection
+      if (form.zonaCorporal === zonaToRemove) {
+        setForm((prev) => ({ ...prev, zonaCorporal: '' }));
+      }
+    }
+  };
+
   const guardar = async () => {
     // Determine final values
     let finalZona = form.zonaCorporal;
@@ -273,6 +285,30 @@ export default function ExerciseEditPage() {
                     >
                       Añadir
                     </button>
+                  </div>
+                )}
+                
+                {zonasPersonalizadas.length > 0 && (
+                  <div className="mt-2">
+                    <small className="text-muted d-block mb-1">Zonas personalizadas:</small>
+                    <div className="d-flex flex-wrap gap-2">
+                      {zonasPersonalizadas.map((zona) => (
+                        <span 
+                          key={zona} 
+                          className="badge bg-primary d-flex align-items-center gap-1"
+                          style={{ fontSize: '0.85rem', padding: '0.35rem 0.5rem' }}
+                        >
+                          {zona}
+                          <button
+                            type="button"
+                            className="btn-close btn-close-white"
+                            style={{ fontSize: '0.6rem', marginLeft: '4px' }}
+                            onClick={() => handleRemoveCustomZone(zona)}
+                            aria-label="Eliminar"
+                          ></button>
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
